@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*.so
+.Python
+*.egg-info
+.eggs
+*.egg
+venv
+env
+.venv
+.env.local
+
+# IDE
+.idea
+.vscode
+*.swp
+
+# Testing
+.coverage
+htmlcov
+.tox
+.pytest_cache
+
+# Django
+*.log
+*.pot
+*.sqlite3
+db.sqlite3
+staticfiles
+
+# Docker
+Dockerfile
+docker-compose*.yml

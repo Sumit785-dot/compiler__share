@@ -1,0 +1,23 @@
+# Django Core
+Django>=5.0
+djangorestframework>=3.14
+django-cors-headers>=4.3
+
+# Django Channels for WebSocket
+channels>=4.0
+channels-redis>=4.1
+daphne>=4.0
+
+# Database
+psycopg2-binary>=2.9
+supabase>=2.0
+
+# Authentication
+djangorestframework-simplejwt>=5.3
+PyJWT>=2.8
+
+# Code Execution
+RestrictedPython>=6.2
+
+# Utilities
+python-dotenv>=1.0
