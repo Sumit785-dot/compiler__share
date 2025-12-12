@@ -3,7 +3,8 @@
  */
 import axios from 'axios';
 
-const API_BASE_URL = '/api';
+// Use environment variable for production, fallback to /api for local dev
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Create axios instance with defaults
 const api = axios.create({
@@ -12,6 +13,7 @@ const api = axios.create({
         'Content-Type': 'application/json',
     },
 });
+
 
 // Add auth token to requests
 api.interceptors.request.use(
