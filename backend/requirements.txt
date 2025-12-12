@@ -21,3 +21,7 @@ RestrictedPython>=6.2
 
 # Utilities
 python-dotenv>=1.0
+
+# Production
+gunicorn>=21.0
+whitenoise>=6.6
