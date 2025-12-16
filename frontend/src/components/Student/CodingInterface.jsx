@@ -110,6 +110,11 @@ export default function CodingInterface() {
                 // Send heartbeat
                 await codingAPI.heartbeat(sessionCode);
 
+                // Skip code polling while saving to prevent race conditions
+                if (isSaving) {
+                    return;
+                }
+
                 // Check for code updates (teacher edits)
                 const codeResponse = await codingAPI.getMyCode(sessionCode);
                 const serverCode = codeResponse.data.code || '';
