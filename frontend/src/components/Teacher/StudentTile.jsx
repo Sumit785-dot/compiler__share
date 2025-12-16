@@ -181,6 +181,7 @@ export default function StudentTile({ student, isSelected, onSelect, sessionCode
 
                 <div className="h-40">
                     <Editor
+                        key={`editor-${student.id}-${isEditing ? 'edit' : 'view'}`}
                         height="100%"
                         language={student.language}
                         value={localCode}
