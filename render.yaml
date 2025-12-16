@@ -1,6 +1,11 @@
 # Render Blueprint
 # This file configures automatic deployment on Render
 
+databases:
+  - name: consoleshare-db
+    plan: free
+    region: oregon
+
 services:
   - type: web
     name: consoleshare-backend
@@ -18,6 +23,10 @@ services:
         value: "False"
       - key: DJANGO_SECRET_KEY
         generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: consoleshare-db
+          property: connectionString
       - key: ALLOWED_HOSTS
         sync: false
       - key: CORS_ALLOWED_ORIGINS
