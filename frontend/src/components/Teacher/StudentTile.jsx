@@ -1,11 +1,11 @@
 /**
  * Student Tile - Individual student view in teacher dashboard
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import Editor from '@monaco-editor/react';
 import { codingAPI } from '../../services/api';
 
-export default function StudentTile({ student, isSelected, onSelect, sessionCode }) {
+function StudentTile({ student, isSelected, onSelect, sessionCode }) {
     const [isEditing, setIsEditing] = useState(false);
     const [localCode, setLocalCode] = useState(student.code_content || '');
     const [isRunning, setIsRunning] = useState(false);
@@ -308,3 +308,17 @@ export default function StudentTile({ student, isSelected, onSelect, sessionCode
         </div>
     );
 }
+
+// Memoize component to prevent unnecessary re-renders during polling
+export default memo(StudentTile, (prevProps, nextProps) => {
+    // Only re-render if important props changed
+    return (
+        prevProps.student.id === nextProps.student.id &&
+        prevProps.student.code_content === nextProps.student.code_content &&
+        prevProps.student.is_connected === nextProps.student.is_connected &&
+        prevProps.student.has_errors === nextProps.student.has_errors &&
+        prevProps.student.language === nextProps.student.language &&
+        JSON.stringify(prevProps.student.recent_logs?.[0]) === JSON.stringify(nextProps.student.recent_logs?.[0]) &&
+        prevProps.isSelected === nextProps.isSelected
+    );
+});
