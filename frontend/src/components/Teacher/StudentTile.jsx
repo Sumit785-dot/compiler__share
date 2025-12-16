@@ -11,6 +11,7 @@ export default function StudentTile({ student, isSelected, onSelect, sessionCode
     const [isRunning, setIsRunning] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [runOutput, setRunOutput] = useState(null);
+    const [showExpandedConsole, setShowExpandedConsole] = useState(false);
 
     useEffect(() => {
         if (!isEditing) {
@@ -206,13 +207,25 @@ export default function StudentTile({ student, isSelected, onSelect, sessionCode
                 </div>
             </div>
 
-            {/* Console Output Preview */}
-            <div className="rounded-lg bg-dark-900 border border-dark-700 p-3">
-                <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            {/* Console Output Preview - Clickable to expand */}
+            <div
+                className="rounded-lg bg-dark-900 border border-dark-700 p-3 cursor-pointer hover:border-blue-500/50 transition-colors"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setShowExpandedConsole(true);
+                }}
+                title="Click to expand console"
+            >
+                <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
+                    <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Console
+                    </div>
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                     </svg>
-                    Console
                 </div>
                 <div className="font-mono text-sm max-h-24 overflow-y-auto">
                     {recentOutput ? (
@@ -226,6 +239,64 @@ export default function StudentTile({ student, isSelected, onSelect, sessionCode
                     )}
                 </div>
             </div>
+
+            {/* Expanded Console Modal */}
+            {showExpandedConsole && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                    onClick={() => setShowExpandedConsole(false)}
+                >
+                    <div
+                        className="bg-dark-800 border border-dark-600 rounded-xl w-full max-w-3xl max-h-[80vh] m-4 flex flex-col shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-dark-600">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center font-bold text-white">
+                                    {(student.full_name || student.username)[0].toUpperCase()}
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-white">{student.full_name || student.username}</h3>
+                                    <p className="text-sm text-gray-400">Console Output</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowExpandedConsole(false)}
+                                className="p-2 text-gray-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Modal Body - Full Console Output */}
+                        <div className="flex-1 overflow-y-auto p-4 bg-dark-900">
+                            <div className="font-mono text-base">
+                                {recentOutput ? (
+                                    <pre className={`whitespace-pre-wrap break-words ${(recentOutput.log_type === 'error' || recentOutput.success === false) ? 'text-red-400' : 'text-green-400'
+                                        }`}>
+                                        {recentOutput.message || 'No output'}
+                                    </pre>
+                                ) : (
+                                    <span className="text-gray-500 italic">No output yet</span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-4 border-t border-dark-600 flex justify-end">
+                            <button
+                                onClick={() => setShowExpandedConsole(false)}
+                                className="btn btn-secondary"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Edit Mode Indicator */}
             {isEditing && (
