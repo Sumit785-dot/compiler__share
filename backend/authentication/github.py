@@ -130,3 +130,39 @@ def push_file_to_repo(access_token, owner, repo, path, content, message, branch=
         'success': False,
         'error': response.json().get('message', 'Failed to push file')
     }
+
+
+def create_repo(access_token, name, description='', private=False, auto_init=True):
+    """Create a new GitHub repository."""
+    response = requests.post(
+        f"{GITHUB_API_URL}/user/repos",
+        json={
+            'name': name,
+            'description': description,
+            'private': private,
+            'auto_init': auto_init  # Creates README.md automatically
+        },
+        headers={
+            'Authorization': f'Bearer {access_token}',
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    )
+    
+    if response.status_code == 201:
+        repo = response.json()
+        return {
+            'success': True,
+            'repo': {
+                'id': repo['id'],
+                'name': repo['name'],
+                'full_name': repo['full_name'],
+                'private': repo['private'],
+                'html_url': repo['html_url'],
+                'default_branch': repo.get('default_branch', 'main')
+            }
+        }
+    
+    return {
+        'success': False,
+        'error': response.json().get('message', 'Failed to create repository')
+    }

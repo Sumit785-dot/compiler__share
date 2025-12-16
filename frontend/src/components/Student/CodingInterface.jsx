@@ -44,6 +44,11 @@ export default function CodingInterface() {
     const [selectedRepo, setSelectedRepo] = useState('');
     const [githubFilename, setGithubFilename] = useState('');
     const [isPushing, setIsPushing] = useState(false);
+    // New repo creation state
+    const [showCreateRepo, setShowCreateRepo] = useState(false);
+    const [newRepoName, setNewRepoName] = useState('');
+    const [newRepoPrivate, setNewRepoPrivate] = useState(false);
+    const [isCreatingRepo, setIsCreatingRepo] = useState(false);
 
     // If no session code, redirect to join
     useEffect(() => {
@@ -307,6 +312,37 @@ export default function CodingInterface() {
             setIsPushing(false);
         }
     };
+
+    // Create new GitHub repo
+    const createNewRepo = async () => {
+        if (!newRepoName.trim()) return;
+
+        setIsCreatingRepo(true);
+        try {
+            const response = await githubAPI.createRepo(
+                newRepoName.trim(),
+                'Created from CodeMonitor',
+                newRepoPrivate
+            );
+
+            if (response.data.success) {
+                alert(`✅ Repository created: ${response.data.repo.html_url}`);
+                // Add to repos list and select it
+                const newRepo = response.data.repo;
+                setGithubRepos(prev => [newRepo, ...prev]);
+                setSelectedRepo(newRepo.full_name);
+                setShowCreateRepo(false);
+                setNewRepoName('');
+            } else {
+                alert(`❌ Failed: ${response.data.error}`);
+            }
+        } catch (error) {
+            alert(`❌ Failed: ${error.response?.data?.error || error.message}`);
+        } finally {
+            setIsCreatingRepo(false);
+        }
+    };
+
     return (
         <div className="h-screen flex flex-col bg-dark-900">
             {/* Background effects */}
@@ -457,51 +493,107 @@ export default function CodingInterface() {
                         </h3>
 
                         <div className="space-y-4">
-                            {/* Repo Selector */}
-                            <div>
-                                <label className="block text-sm text-gray-400 mb-1">Repository</label>
-                                <select
-                                    value={selectedRepo}
-                                    onChange={(e) => setSelectedRepo(e.target.value)}
-                                    className="input px-4 py-2 w-full"
-                                >
-                                    <option value="">Select a repository...</option>
-                                    {githubRepos.map(repo => (
-                                        <option key={repo.id} value={repo.full_name}>
-                                            {repo.name} {repo.private ? '🔒' : ''}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            {/* Create New Repo Toggle */}
+                            {!showCreateRepo ? (
+                                <>
+                                    {/* Repo Selector */}
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">Repository</label>
+                                        <select
+                                            value={selectedRepo}
+                                            onChange={(e) => setSelectedRepo(e.target.value)}
+                                            className="input px-4 py-2 w-full"
+                                        >
+                                            <option value="">Select a repository...</option>
+                                            {githubRepos.map(repo => (
+                                                <option key={repo.id} value={repo.full_name}>
+                                                    {repo.name} {repo.private ? '🔒' : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            onClick={() => setShowCreateRepo(true)}
+                                            className="text-sm text-blue-400 hover:text-blue-300 mt-2"
+                                        >
+                                            + Create New Repository
+                                        </button>
+                                    </div>
 
-                            {/* Filename Input */}
-                            <div>
-                                <label className="block text-sm text-gray-400 mb-1">Filename</label>
-                                <input
-                                    type="text"
-                                    value={githubFilename}
-                                    onChange={(e) => setGithubFilename(e.target.value)}
-                                    placeholder="main.py"
-                                    className="input px-4 py-2 w-full"
-                                />
-                            </div>
+                                    {/* Filename/Path Input */}
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">File Path</label>
+                                        <input
+                                            type="text"
+                                            value={githubFilename}
+                                            onChange={(e) => setGithubFilename(e.target.value)}
+                                            placeholder="src/main.py or just main.py"
+                                            className="input px-4 py-2 w-full"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">Use folders like: src/code.py</p>
+                                    </div>
 
-                            {/* Buttons */}
-                            <div className="flex justify-end gap-3 pt-4">
-                                <button
-                                    onClick={() => setShowGithubModal(false)}
-                                    className="btn btn-secondary"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={pushToGitHub}
-                                    disabled={!selectedRepo || !githubFilename || isPushing}
-                                    className="btn btn-primary disabled:opacity-50"
-                                >
-                                    {isPushing ? 'Pushing...' : 'Push Code'}
-                                </button>
-                            </div>
+                                    {/* Push Buttons */}
+                                    <div className="flex justify-end gap-3 pt-4">
+                                        <button
+                                            onClick={() => setShowGithubModal(false)}
+                                            className="btn btn-secondary"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={pushToGitHub}
+                                            disabled={!selectedRepo || !githubFilename || isPushing}
+                                            className="btn btn-primary disabled:opacity-50"
+                                        >
+                                            {isPushing ? 'Pushing...' : 'Push Code'}
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Create New Repo Form */}
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">Repository Name</label>
+                                        <input
+                                            type="text"
+                                            value={newRepoName}
+                                            onChange={(e) => setNewRepoName(e.target.value)}
+                                            placeholder="my-new-project"
+                                            className="input px-4 py-2 w-full"
+                                        />
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id="privateRepo"
+                                            checked={newRepoPrivate}
+                                            onChange={(e) => setNewRepoPrivate(e.target.checked)}
+                                            className="w-4 h-4"
+                                        />
+                                        <label htmlFor="privateRepo" className="text-sm text-gray-400">
+                                            Make repository private 🔒
+                                        </label>
+                                    </div>
+
+                                    {/* Create Buttons */}
+                                    <div className="flex justify-end gap-3 pt-4">
+                                        <button
+                                            onClick={() => setShowCreateRepo(false)}
+                                            className="btn btn-secondary"
+                                        >
+                                            Back
+                                        </button>
+                                        <button
+                                            onClick={createNewRepo}
+                                            disabled={!newRepoName.trim() || isCreatingRepo}
+                                            className="btn btn-primary disabled:opacity-50"
+                                        >
+                                            {isCreatingRepo ? 'Creating...' : 'Create Repo'}
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -155,6 +155,10 @@ export const githubAPI = {
     // Push code to repo
     pushCode: (repo, filename, code, message) =>
         api.post('/auth/github/push/', { repo, filename, code, message }),
+
+    // Create new repo
+    createRepo: (name, description = '', isPrivate = false) =>
+        api.post('/auth/github/create-repo/', { name, description, private: isPrivate }),
 };
 
 export default api;

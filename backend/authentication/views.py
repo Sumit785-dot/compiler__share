@@ -242,3 +242,40 @@ class GitHubPushView(APIView):
             return Response(result)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GitHubCreateRepoView(APIView):
+    """Create a new GitHub repository."""
+    
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            connection = request.user.github_connection
+        except GitHubConnection.DoesNotExist:
+            return Response(
+                {'error': 'GitHub not connected'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        name = request.data.get('name', '')
+        description = request.data.get('description', 'Created from CodeMonitor')
+        private = request.data.get('private', False)
+        
+        if not name:
+            return Response(
+                {'error': 'Repository name is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        result = github_utils.create_repo(
+            access_token=connection.access_token,
+            name=name,
+            description=description,
+            private=private
+        )
+        
+        if result['success']:
+            return Response(result)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)

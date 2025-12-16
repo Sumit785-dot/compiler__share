@@ -8,7 +8,8 @@ from rest_framework.response import Response
 
 from .views import (
     RegisterView, LoginView, ProfileView, LogoutView,
-    GitHubAuthView, GitHubCallbackView, GitHubStatusView, GitHubReposView, GitHubPushView
+    GitHubAuthView, GitHubCallbackView, GitHubStatusView, GitHubReposView, GitHubPushView,
+    GitHubCreateRepoView
 )
 
 
@@ -35,4 +36,5 @@ urlpatterns = [
     path('github/status/', GitHubStatusView.as_view(), name='github_status'),
     path('github/repos/', GitHubReposView.as_view(), name='github_repos'),
     path('github/push/', GitHubPushView.as_view(), name='github_push'),
+    path('github/create-repo/', GitHubCreateRepoView.as_view(), name='github_create_repo'),
 ]
