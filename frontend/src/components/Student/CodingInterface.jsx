@@ -33,6 +33,7 @@ export default function CodingInterface() {
     const [lastSaved, setLastSaved] = useState(null);
     const debounceRef = useRef(null);
     const heartbeatRef = useRef(null);
+    const lastTypedRef = useRef(0); // Track last typing time to prevent overwrites
 
     // GitHub integration state
     const [githubConnected, setGithubConnected] = useState(false);
@@ -110,8 +111,9 @@ export default function CodingInterface() {
                 // Send heartbeat
                 await codingAPI.heartbeat(sessionCode);
 
-                // Skip code polling while saving to prevent race conditions
-                if (isSaving) {
+                // Skip code polling while saving or if user typed recently (3 seconds)
+                const timeSinceLastTyped = Date.now() - lastTypedRef.current;
+                if (isSaving || timeSinceLastTyped < 3000) {
                     return;
                 }
 
@@ -170,6 +172,7 @@ export default function CodingInterface() {
     // Handle code changes with debounce
     const handleCodeChange = useCallback((value) => {
         setCode(value);
+        lastTypedRef.current = Date.now(); // Track typing time
 
         // Debounce saving to server
         if (debounceRef.current) {
