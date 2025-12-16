@@ -34,6 +34,7 @@ export default function CodingInterface() {
     const debounceRef = useRef(null);
     const heartbeatRef = useRef(null);
     const lastTypedRef = useRef(0); // Track last typing time to prevent overwrites
+    const lastSavedCodeRef = useRef(''); // Track what was last saved to detect unsaved changes
 
     // GitHub integration state
     const [githubConnected, setGithubConnected] = useState(false);
@@ -126,8 +127,14 @@ export default function CodingInterface() {
                 if (serverCode && serverCode !== lastCodeFromServer) {
                     lastCodeFromServer = serverCode;
                     // Only apply if it's actually different from current code
-                    // This happens when teacher edits
+                    // AND the current code matches what we last saved (no unsaved changes)
                     setCode(prevCode => {
+                        // Check if user has unsaved changes
+                        const hasUnsavedChanges = prevCode !== lastSavedCodeRef.current && lastSavedCodeRef.current !== '';
+                        if (hasUnsavedChanges) {
+                            console.log('Skipping server update - user has unsaved changes');
+                            return prevCode;
+                        }
                         if (prevCode !== serverCode) {
                             console.log('Teacher edit received!');
                             return serverCode;
@@ -161,6 +168,7 @@ export default function CodingInterface() {
         setIsSaving(true);
         try {
             await codingAPI.saveCode(codeToSave, language, sessionCode);
+            lastSavedCodeRef.current = codeToSave; // Track what we saved
             setLastSaved(new Date());
         } catch (error) {
             console.error('Save failed:', error);
