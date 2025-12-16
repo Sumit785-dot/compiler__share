@@ -115,6 +115,31 @@ export default function JoinSession() {
                         </ol>
                     </div>
                 </div>
+
+                {/* Personal Console Option */}
+                <div className="mt-6">
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-dark-600"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-4 bg-dark-900 text-gray-500">or</span>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => navigate('/personal-console')}
+                        className="mt-6 w-full btn btn-secondary py-3 text-lg flex items-center justify-center gap-2 hover:border-green-500/50 hover:text-green-400 transition-all"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                        Open Personal Console
+                    </button>
+                    <p className="text-center text-sm text-gray-500 mt-2">
+                        Practice coding on your own without joining a session
+                    </p>
+                </div>
             </div>
         </div>
     );

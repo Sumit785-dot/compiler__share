@@ -118,6 +118,9 @@ export default function SessionManager() {
                                     >
                                         <option value="python">Python</option>
                                         <option value="javascript">JavaScript</option>
+                                        <option value="c">C</option>
+                                        <option value="cpp">C++</option>
+                                        <option value="java">Java</option>
                                     </select>
                                 </div>
                                 <div className="flex gap-3 pt-2">

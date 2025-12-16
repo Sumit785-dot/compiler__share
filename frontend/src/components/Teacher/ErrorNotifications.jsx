@@ -1,8 +1,63 @@
 /**
  * Error Notifications Panel - Shows student errors to teacher
  */
+import { useEffect, useRef } from 'react';
+
+// Play notification sound
+const playNotificationSound = () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    gainNode.gain.value = 0.3;
+
+    oscillator.start();
+    setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+    }, 200);
+};
+
+// Show browser notification
+const showBrowserNotification = (studentName, errorMessage) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`⚠️ Error from ${studentName}`, {
+            body: errorMessage.slice(0, 100),
+            icon: '🚨',
+            tag: 'student-error'
+        });
+    }
+};
+
 export default function ErrorNotifications({ errors, onMarkRead, onClearAll }) {
     const unreadErrors = errors.filter(e => !e.is_read);
+    const prevErrorCountRef = useRef(0);
+
+    // Request notification permission on mount
+    useEffect(() => {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }, []);
+
+    // Play sound and show notification when new error arrives
+    useEffect(() => {
+        if (unreadErrors.length > prevErrorCountRef.current && prevErrorCountRef.current !== 0) {
+            // New error arrived
+            const latestError = unreadErrors[0];
+            playNotificationSound();
+            showBrowserNotification(
+                latestError?.student?.full_name || latestError?.student?.username || 'Student',
+                latestError?.error_message || 'An error occurred'
+            );
+        }
+        prevErrorCountRef.current = unreadErrors.length;
+    }, [unreadErrors]);
 
     return (
         <div className="card">

@@ -7,6 +7,18 @@ import Editor from '@monaco-editor/react';
 import { sessionsAPI, codingAPI } from '../../services/api';
 import Console from './Console';
 
+// Map our language IDs to Monaco editor language IDs
+const getMonacoLanguage = (lang) => {
+    const langMap = {
+        python: 'python',
+        javascript: 'javascript',
+        c: 'c',
+        cpp: 'cpp',
+        java: 'java'
+    };
+    return langMap[lang] || 'python';
+};
+
 export default function CodingInterface() {
     const { sessionCode } = useParams();
     const navigate = useNavigate();
@@ -136,12 +148,15 @@ export default function CodingInterface() {
     // Handle language change
     const handleLanguageChange = (newLang) => {
         setLanguage(newLang);
-        // Update code template
-        if (newLang === 'python') {
-            setCode('# Write your Python code here\nprint("Hello, World!")\n');
-        } else {
-            setCode('// Write your JavaScript code here\nconsole.log("Hello, World!");\n');
-        }
+        // Update code template based on language
+        const templates = {
+            python: '# Write your Python code here\nprint("Hello, World!")\n',
+            javascript: '// Write your JavaScript code here\nconsole.log("Hello, World!");\n',
+            c: '#include <stdio.h>\n\nint main() {\n    printf("Hello, World!\\n");\n    return 0;\n}\n',
+            cpp: '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}\n',
+            java: 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}\n'
+        };
+        setCode(templates[newLang] || templates.python);
     };
 
     // Run code using REST API
@@ -193,6 +208,9 @@ export default function CodingInterface() {
                     >
                         <option value="python">Python</option>
                         <option value="javascript">JavaScript</option>
+                        <option value="c">C</option>
+                        <option value="cpp">C++</option>
+                        <option value="java">Java</option>
                     </select>
 
                     {/* Connection/Save Status */}
@@ -237,7 +255,7 @@ export default function CodingInterface() {
                 <div className="flex-1 min-h-[400px] lg:min-h-0">
                     <Editor
                         height="100%"
-                        language={language}
+                        language={getMonacoLanguage(language)}
                         value={code}
                         onChange={handleCodeChange}
                         theme="vs-dark"

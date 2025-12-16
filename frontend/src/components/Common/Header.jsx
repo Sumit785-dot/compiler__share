@@ -52,6 +52,12 @@ export default function Header() {
                                     >
                                         Dashboard
                                     </Link>
+                                    <Link
+                                        to="/personal-console"
+                                        className="text-gray-300 hover:text-green-400 transition-colors"
+                                    >
+                                        Personal Console
+                                    </Link>
                                 </>
                             )}
                             {user?.role === 'student' && (
@@ -61,6 +67,12 @@ export default function Header() {
                                         className="text-gray-300 hover:text-white transition-colors"
                                     >
                                         Join Session
+                                    </Link>
+                                    <Link
+                                        to="/personal-console"
+                                        className="text-gray-300 hover:text-green-400 transition-colors"
+                                    >
+                                        Personal Console
                                     </Link>
                                 </>
                             )}

@@ -241,6 +241,9 @@ class SupportedLanguagesView(APIView):
             'languages': [
                 {'id': 'python', 'name': 'Python', 'extension': '.py'},
                 {'id': 'javascript', 'name': 'JavaScript', 'extension': '.js'},
+                {'id': 'c', 'name': 'C', 'extension': '.c'},
+                {'id': 'cpp', 'name': 'C++', 'extension': '.cpp'},
+                {'id': 'java', 'name': 'Java', 'extension': '.java'},
             ]
         })
 

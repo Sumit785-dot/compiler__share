@@ -4,6 +4,7 @@ import Login from './components/Common/Login'
 import Register from './components/Common/Register'
 import TeacherDashboard from './components/Teacher/Dashboard'
 import StudentInterface from './components/Student/CodingInterface'
+import PersonalConsole from './components/Student/PersonalConsole'
 import SessionManager from './components/Teacher/SessionManager'
 import JoinSession from './components/Student/JoinSession'
 import Header from './components/Common/Header'
@@ -57,6 +58,10 @@ function App() {
                     <Route
                         path="/code/:sessionCode?"
                         element={user?.role === 'student' ? <StudentInterface /> : <Navigate to="/login" />}
+                    />
+                    <Route
+                        path="/personal-console"
+                        element={user ? <PersonalConsole /> : <Navigate to="/login" />}
                     />
 
                     {/* Default redirect */}

@@ -8,12 +8,15 @@ ENV PYTHONUNBUFFERED=1
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies including compilers for code execution
 RUN apt-get update && apt-get install -y \
     gcc \
+    g++ \
+    default-jdk \
     libpq-dev \
     nodejs \
     npm \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -23,6 +26,9 @@ RUN pip install gunicorn daphne
 
 # Copy project
 COPY . .
+
+# Create directory for temp code execution
+RUN mkdir -p /tmp/code_execution && chmod 777 /tmp/code_execution
 
 # Collect static files
 RUN python manage.py collectstatic --noinput || true
