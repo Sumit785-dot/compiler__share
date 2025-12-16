@@ -27,7 +27,9 @@ export default function TeacherDashboard() {
             try {
                 const response = await sessionsAPI.getDashboard(sessionCode);
                 setSession(response.data.session);
-                setStudents(response.data.students);
+                // Sort students by ID to ensure stable ordering
+                const sortedStudents = [...response.data.students].sort((a, b) => a.id - b.id);
+                setStudents(sortedStudents);
 
                 // Load errors
                 const errorsResponse = await sessionsAPI.getErrors(sessionCode);
@@ -56,7 +58,9 @@ export default function TeacherDashboard() {
         const pollData = async () => {
             try {
                 const response = await sessionsAPI.getDashboard(sessionCode);
-                setStudents(response.data.students);
+                // Sort students by ID to ensure stable ordering and prevent UI flickering
+                const sortedStudents = [...response.data.students].sort((a, b) => a.id - b.id);
+                setStudents(sortedStudents);
 
                 const errorsResponse = await sessionsAPI.getErrors(sessionCode);
                 setErrors(errorsResponse.data);

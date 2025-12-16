@@ -210,7 +210,7 @@ class TeacherDashboardView(APIView):
             teacher=request.user
         )
         
-        participants = session.participants.select_related('student').all()
+        participants = session.participants.select_related('student').order_by('student__id').all()
         
         dashboard_data = []
         for participant in participants:
