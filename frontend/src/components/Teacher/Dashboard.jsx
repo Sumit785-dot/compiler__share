@@ -61,6 +61,8 @@ export default function TeacherDashboard() {
                 // Sort students by ID to ensure stable ordering and prevent UI flickering
                 const sortedStudents = [...response.data.students].sort((a, b) => a.id - b.id);
                 setStudents(sortedStudents);
+                // Also update session data to sync language changes
+                setSession(response.data.session);
 
                 const errorsResponse = await sessionsAPI.getErrors(sessionCode);
                 setErrors(errorsResponse.data);
