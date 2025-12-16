@@ -83,6 +83,7 @@ class CodingSessionDetailSerializer(CodingSessionSerializer):
     
     class Meta(CodingSessionSerializer.Meta):
         fields = CodingSessionSerializer.Meta.fields + ['participants']
+        read_only_fields = CodingSessionSerializer.Meta.read_only_fields
 
 
 class JoinSessionSerializer(serializers.Serializer):
