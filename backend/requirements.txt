@@ -22,6 +22,7 @@ RestrictedPython>=6.2
 
 # Utilities
 python-dotenv>=1.0
+requests>=2.31
 
 # Production
 gunicorn>=21.0

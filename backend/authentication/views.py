@@ -92,3 +92,153 @@ class LogoutView(APIView):
             return Response({'message': 'Logged out successfully'})
         except Exception:
             return Response({'message': 'Logged out'})
+
+
+# GitHub OAuth Views
+from django.shortcuts import redirect
+from .models import GitHubConnection
+from . import github as github_utils
+
+
+class GitHubAuthView(APIView):
+    """Start GitHub OAuth flow - returns auth URL."""
+    
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        # Use user ID as state for security
+        state = str(request.user.id)
+        auth_url = github_utils.get_github_auth_url(state)
+        return Response({'auth_url': auth_url})
+
+
+class GitHubCallbackView(APIView):
+    """Handle GitHub OAuth callback."""
+    
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        code = request.GET.get('code')
+        state = request.GET.get('state')
+        
+        if not code:
+            return redirect('https://compiler-share.vercel.app/join?github=error')
+        
+        # Exchange code for token
+        token_data = github_utils.exchange_code_for_token(code)
+        
+        if not token_data or 'access_token' not in token_data:
+            return redirect('https://compiler-share.vercel.app/join?github=error')
+        
+        access_token = token_data['access_token']
+        
+        # Get GitHub user info
+        github_user = github_utils.get_github_user(access_token)
+        
+        if not github_user:
+            return redirect('https://compiler-share.vercel.app/join?github=error')
+        
+        # Find user by state (user ID)
+        try:
+            user = User.objects.get(id=int(state))
+        except (User.DoesNotExist, ValueError):
+            return redirect('https://compiler-share.vercel.app/join?github=error')
+        
+        # Save or update GitHub connection
+        GitHubConnection.objects.update_or_create(
+            user=user,
+            defaults={
+                'access_token': access_token,
+                'github_username': github_user.get('login', ''),
+                'github_id': github_user.get('id')
+            }
+        )
+        
+        # Redirect back to app with success
+        return redirect('https://compiler-share.vercel.app/join?github=success')
+
+
+class GitHubStatusView(APIView):
+    """Check if user has GitHub connected."""
+    
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        try:
+            connection = request.user.github_connection
+            return Response({
+                'connected': True,
+                'github_username': connection.github_username
+            })
+        except GitHubConnection.DoesNotExist:
+            return Response({'connected': False})
+
+
+class GitHubReposView(APIView):
+    """List user's GitHub repositories."""
+    
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        try:
+            connection = request.user.github_connection
+        except GitHubConnection.DoesNotExist:
+            return Response(
+                {'error': 'GitHub not connected'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        repos = github_utils.list_user_repos(connection.access_token)
+        return Response({'repos': repos})
+
+
+class GitHubPushView(APIView):
+    """Push code to a GitHub repository."""
+    
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            connection = request.user.github_connection
+        except GitHubConnection.DoesNotExist:
+            return Response(
+                {'error': 'GitHub not connected'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        repo_full_name = request.data.get('repo')  # e.g., "username/repo"
+        filename = request.data.get('filename', 'main.py')
+        code = request.data.get('code', '')
+        message = request.data.get('message', 'Update code from CodeMonitor')
+        branch = request.data.get('branch', 'main')
+        
+        if not repo_full_name or not code:
+            return Response(
+                {'error': 'repo and code are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Split repo full name into owner/repo
+        parts = repo_full_name.split('/')
+        if len(parts) != 2:
+            return Response(
+                {'error': 'Invalid repo format. Use owner/repo'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        owner, repo = parts
+        
+        result = github_utils.push_file_to_repo(
+            access_token=connection.access_token,
+            owner=owner,
+            repo=repo,
+            path=filename,
+            content=code,
+            message=message,
+            branch=branch
+        )
+        
+        if result['success']:
+            return Response(result)
+        else:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)

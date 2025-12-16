@@ -2,9 +2,9 @@
  * Student Coding Interface - Full code editor with console
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
-import { sessionsAPI, codingAPI } from '../../services/api';
+import { sessionsAPI, codingAPI, githubAPI } from '../../services/api';
 import Console from './Console';
 
 // Map our language IDs to Monaco editor language IDs
@@ -22,6 +22,7 @@ const getMonacoLanguage = (lang) => {
 export default function CodingInterface() {
     const { sessionCode } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [session, setSession] = useState(null);
     const [code, setCode] = useState('# Write your code here\nprint("Hello, World!")\n');
@@ -33,12 +34,41 @@ export default function CodingInterface() {
     const debounceRef = useRef(null);
     const heartbeatRef = useRef(null);
 
+    // GitHub integration state
+    const [githubConnected, setGithubConnected] = useState(false);
+    const [githubUsername, setGithubUsername] = useState('');
+    const [showGithubModal, setShowGithubModal] = useState(false);
+    const [githubRepos, setGithubRepos] = useState([]);
+    const [selectedRepo, setSelectedRepo] = useState('');
+    const [githubFilename, setGithubFilename] = useState('');
+    const [isPushing, setIsPushing] = useState(false);
+
     // If no session code, redirect to join
     useEffect(() => {
         if (!sessionCode) {
             navigate('/join');
         }
     }, [sessionCode, navigate]);
+
+    // Check GitHub connection status
+    useEffect(() => {
+        const checkGitHub = async () => {
+            try {
+                const response = await githubAPI.getStatus();
+                setGithubConnected(response.data.connected);
+                setGithubUsername(response.data.github_username || '');
+            } catch (error) {
+                console.log('GitHub not connected');
+            }
+        };
+        checkGitHub();
+
+        // Check for OAuth callback success/error
+        const params = new URLSearchParams(location.search);
+        if (params.get('github') === 'success') {
+            checkGitHub();
+        }
+    }, [location.search]);
 
     // Load session data and saved code
     useEffect(() => {
@@ -212,6 +242,55 @@ export default function CodingInterface() {
         URL.revokeObjectURL(url);
     };
 
+    // Connect GitHub account
+    const connectGitHub = async () => {
+        try {
+            const response = await githubAPI.getAuthUrl();
+            window.location.href = response.data.auth_url;
+        } catch (error) {
+            console.error('Failed to get GitHub auth URL:', error);
+        }
+    };
+
+    // Open push to GitHub modal
+    const openPushModal = async () => {
+        try {
+            const response = await githubAPI.getRepos();
+            setGithubRepos(response.data.repos || []);
+            // Set default filename based on language
+            const extensions = { python: 'py', javascript: 'js', c: 'c', cpp: 'cpp', java: 'java' };
+            setGithubFilename(`main.${extensions[language] || 'txt'}`);
+            setShowGithubModal(true);
+        } catch (error) {
+            console.error('Failed to load repos:', error);
+        }
+    };
+
+    // Push code to GitHub
+    const pushToGitHub = async () => {
+        if (!selectedRepo || !githubFilename) return;
+
+        setIsPushing(true);
+        try {
+            const response = await githubAPI.pushCode(
+                selectedRepo,
+                githubFilename,
+                code,
+                `Update ${githubFilename} from CodeMonitor`
+            );
+
+            if (response.data.success) {
+                alert(`✅ Code pushed successfully!\n\nView: ${response.data.file_url}`);
+                setShowGithubModal(false);
+            } else {
+                alert(`❌ Push failed: ${response.data.error}`);
+            }
+        } catch (error) {
+            alert(`❌ Push failed: ${error.message}`);
+        } finally {
+            setIsPushing(false);
+        }
+    };
     return (
         <div className="h-screen flex flex-col bg-dark-900">
             {/* Background effects */}
@@ -257,6 +336,31 @@ export default function CodingInterface() {
                         </svg>
                         Save
                     </button>
+
+                    {/* GitHub Button */}
+                    {githubConnected ? (
+                        <button
+                            onClick={openPushModal}
+                            className="btn bg-gray-800 text-white hover:bg-gray-700 border border-gray-600"
+                            title={`Push to GitHub (@${githubUsername})`}
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                            </svg>
+                            Push to GitHub
+                        </button>
+                    ) : (
+                        <button
+                            onClick={connectGitHub}
+                            className="btn bg-gray-800 text-white hover:bg-gray-700 border border-gray-600"
+                            title="Connect GitHub account"
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                            </svg>
+                            Connect GitHub
+                        </button>
+                    )}
 
                     {/* Run Button - Works via REST API */}
                     <button
@@ -318,6 +422,74 @@ export default function CodingInterface() {
                     />
                 </div>
             </div>
+
+            {/* GitHub Push Modal */}
+            {showGithubModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                    onClick={() => setShowGithubModal(false)}
+                >
+                    <div
+                        className="bg-dark-800 border border-dark-600 rounded-xl w-full max-w-md m-4 p-6 shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                            </svg>
+                            Push to GitHub
+                        </h3>
+
+                        <div className="space-y-4">
+                            {/* Repo Selector */}
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-1">Repository</label>
+                                <select
+                                    value={selectedRepo}
+                                    onChange={(e) => setSelectedRepo(e.target.value)}
+                                    className="input px-4 py-2 w-full"
+                                >
+                                    <option value="">Select a repository...</option>
+                                    {githubRepos.map(repo => (
+                                        <option key={repo.id} value={repo.full_name}>
+                                            {repo.name} {repo.private ? '🔒' : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Filename Input */}
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-1">Filename</label>
+                                <input
+                                    type="text"
+                                    value={githubFilename}
+                                    onChange={(e) => setGithubFilename(e.target.value)}
+                                    placeholder="main.py"
+                                    className="input px-4 py-2 w-full"
+                                />
+                            </div>
+
+                            {/* Buttons */}
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button
+                                    onClick={() => setShowGithubModal(false)}
+                                    className="btn btn-secondary"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={pushToGitHub}
+                                    disabled={!selectedRepo || !githubFilename || isPushing}
+                                    className="btn btn-primary disabled:opacity-50"
+                                >
+                                    {isPushing ? 'Pushing...' : 'Push Code'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

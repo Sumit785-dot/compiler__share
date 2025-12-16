@@ -138,4 +138,23 @@ export const codingAPI = {
         api.get('/coding/languages/'),
 };
 
+// GitHub API
+export const githubAPI = {
+    // Get connection status
+    getStatus: () =>
+        api.get('/auth/github/status/'),
+
+    // Get OAuth auth URL
+    getAuthUrl: () =>
+        api.get('/auth/github/auth/'),
+
+    // List user's repos
+    getRepos: () =>
+        api.get('/auth/github/repos/'),
+
+    // Push code to repo
+    pushCode: (repo, filename, code, message) =>
+        api.post('/auth/github/push/', { repo, filename, code, message }),
+};
+
 export default api;
