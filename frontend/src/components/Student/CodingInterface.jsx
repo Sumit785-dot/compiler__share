@@ -189,6 +189,29 @@ export default function CodingInterface() {
 
     const clearConsole = () => setOutput([]);
 
+    // Download code to device
+    const downloadCode = () => {
+        const extensions = {
+            python: 'py',
+            javascript: 'js',
+            c: 'c',
+            cpp: 'cpp',
+            java: 'java'
+        };
+        const ext = extensions[language] || 'txt';
+        const filename = `code_${new Date().toISOString().slice(0, 10)}.${ext}`;
+
+        const blob = new Blob([code], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <div className="h-screen flex flex-col bg-dark-900">
             {/* Background effects */}
@@ -223,6 +246,18 @@ export default function CodingInterface() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {/* Download Button */}
+                    <button
+                        onClick={downloadCode}
+                        className="btn btn-secondary"
+                        title="Download Code"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Save
+                    </button>
+
                     {/* Run Button - Works via REST API */}
                     <button
                         onClick={runCode}
