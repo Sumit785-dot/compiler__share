@@ -96,6 +96,9 @@ export const sessionsAPI = {
     end: (sessionCode) =>
         api.post(`/sessions/${sessionCode}/end/`),
 
+    update: (sessionCode, data) =>
+        api.patch(`/sessions/${sessionCode}/`, data),
+
     getParticipants: (sessionCode) =>
         api.get(`/sessions/${sessionCode}/participants/`),
 

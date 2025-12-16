@@ -253,6 +253,27 @@ export default function TeacherDashboard() {
                                 <option value="errors">Has Errors</option>
                             </select>
 
+                            {/* Language */}
+                            <select
+                                value={session?.default_language || 'python'}
+                                onChange={async (e) => {
+                                    try {
+                                        await sessionsAPI.update(sessionCode, { default_language: e.target.value });
+                                        setSession(prev => ({ ...prev, default_language: e.target.value }));
+                                    } catch (error) {
+                                        console.error('Failed to update language:', error);
+                                    }
+                                }}
+                                className="input py-2 w-36"
+                                title="Session Language"
+                            >
+                                <option value="python">Python</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="c">C</option>
+                                <option value="cpp">C++</option>
+                                <option value="java">Java</option>
+                            </select>
+
                             {/* Back button */}
                             <button
                                 onClick={() => navigate('/dashboard')}
