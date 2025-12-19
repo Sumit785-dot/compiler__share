@@ -408,6 +408,48 @@ export default function CodingInterface() {
         }
     };
 
+    // Layout state
+    const [layout, setLayout] = useState('horizontal'); // 'horizontal' | 'vertical'
+    const [consoleSize, setConsoleSize] = useState(400); // Width or Height in pixels
+    const [isResizing, setIsResizing] = useState(false);
+
+    // Handle resizing
+    const handleMouseDown = (e) => {
+        e.preventDefault();
+        setIsResizing(true);
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (layout === 'horizontal') {
+            const newWidth = window.innerWidth - e.clientX;
+            setConsoleSize(Math.max(200, Math.min(newWidth, window.innerWidth - 300)));
+        } else {
+            const newHeight = window.innerHeight - e.clientY;
+            setConsoleSize(Math.max(150, Math.min(newHeight, window.innerHeight - 200)));
+        }
+    }, [layout]);
+
+    const handleMouseUp = useCallback(() => {
+        setIsResizing(false);
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+    }, [handleMouseMove]);
+
+    // Cleanup resize listeners
+    useEffect(() => {
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [handleMouseMove, handleMouseUp]);
+
+    const toggleLayout = () => {
+        setLayout(prev => prev === 'horizontal' ? 'vertical' : 'horizontal');
+        setConsoleSize(prev => prev === 'horizontal' ? 300 : 400);
+    };
+
     return (
         <div className="h-screen flex flex-col bg-dark-900">
             {/* Background effects */}
@@ -505,10 +547,10 @@ export default function CodingInterface() {
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="relative flex-1 flex flex-col lg:flex-row">
+            {/* Main Content - Flex Container */}
+            <div className={`relative flex-1 flex ${layout === 'horizontal' ? 'flex-row' : 'flex-col'}`}>
                 {/* Editor */}
-                <div className="flex-1 min-h-[400px] lg:min-h-0">
+                <div className="flex-1 min-w-0 min-h-0">
                     <Editor
                         height="100%"
                         language={getMonacoLanguage(language)}
@@ -538,11 +580,44 @@ export default function CodingInterface() {
                     />
                 </div>
 
+                {/* Resizer Handle */}
+                <div
+                    className={`${layout === 'horizontal'
+                            ? 'w-1 cursor-col-resize hover:bg-blue-500/50'
+                            : 'h-1 cursor-row-resize hover:bg-blue-500/50'
+                        } bg-dark-700 transition-colors z-20`}
+                    onMouseDown={handleMouseDown}
+                />
+
                 {/* Console */}
-                <div className="lg:w-96 h-64 lg:h-auto border-t lg:border-t-0 lg:border-l border-dark-700">
+                <div
+                    style={{
+                        [layout === 'horizontal' ? 'width' : 'height']: consoleSize,
+                        transition: isResizing ? 'none' : 'all 0.2s ease'
+                    }}
+                    className={`flex flex-col bg-dark-900 border-dark-700 ${layout === 'horizontal' ? 'border-l' : 'border-t'
+                        }`}
+                >
                     <Console
                         output={output}
                         onClear={clearConsole}
+                        headerControls={
+                            <button
+                                onClick={toggleLayout}
+                                className="p-1 hover:bg-dark-700 rounded text-gray-400 hover:text-white transition-colors"
+                                title={layout === 'horizontal' ? "Dock to bottom" : "Dock to side"}
+                            >
+                                {layout === 'horizontal' ? (
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                )}
+                            </button>
+                        }
                     />
                 </div>
             </div>
