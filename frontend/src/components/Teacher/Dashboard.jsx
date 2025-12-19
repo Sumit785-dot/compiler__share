@@ -144,11 +144,19 @@ export default function TeacherDashboard() {
         };
 
         const handleActivity = (data) => {
-            setStudents(prev => prev.map(s =>
-                s.id === data.student_id
-                    ? { ...s, last_active: data.timestamp }
-                    : s
-            ));
+            setStudents(prev => prev.map(s => {
+                if (s.id === data.student_id) {
+                    if (data.activity_type === 'tab_hidden') {
+                        return { ...s, last_active: data.timestamp, activity_alert: 'Tab Hidden' };
+                    } else if (data.activity_type === 'window_blur') {
+                        return { ...s, last_active: data.timestamp, activity_alert: 'Window Blur' };
+                    } else if (data.activity_type === 'tab_visible') {
+                        return { ...s, last_active: data.timestamp, activity_alert: null };
+                    }
+                    return { ...s, last_active: data.timestamp };
+                }
+                return s;
+            }));
         };
 
         on('student_code_update', handleCodeUpdate);

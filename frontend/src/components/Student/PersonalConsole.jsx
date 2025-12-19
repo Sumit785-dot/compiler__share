@@ -128,9 +128,20 @@ export default function PersonalConsole() {
         try {
             const response = await githubAPI.getRepos();
             setGithubRepos(response.data.repos || []);
-            // Set default filename based on language
-            const extensions = { python: 'py', javascript: 'js', c: 'c', cpp: 'cpp', java: 'java' };
-            setGithubFilename(`main.${extensions[language] || 'txt'}`);
+
+            // Auto-fill from localStorage
+            const lastRepo = localStorage.getItem('lastPushedRepo_personal');
+            const lastFile = localStorage.getItem('lastPushedFile_personal');
+
+            if (lastRepo) setSelectedRepo(lastRepo);
+
+            if (lastFile) {
+                setGithubFilename(lastFile);
+            } else {
+                const extensions = { python: 'py', javascript: 'js', c: 'c', cpp: 'cpp', java: 'java' };
+                setGithubFilename(`main.${extensions[language] || 'txt'}`);
+            }
+
             setShowGithubModal(true);
         } catch (error) {
             console.error('Failed to load repos:', error);
@@ -152,6 +163,9 @@ export default function PersonalConsole() {
 
             if (response.data.success) {
                 alert(`✅ Code pushed successfully!\n\nView: ${response.data.file_url}`);
+                // Save to localStorage
+                localStorage.setItem('lastPushedRepo_personal', selectedRepo);
+                localStorage.setItem('lastPushedFile_personal', githubFilename);
                 setShowGithubModal(false);
             } else {
                 alert(`❌ Push failed: ${response.data.error}`);
@@ -290,8 +304,8 @@ export default function PersonalConsole() {
                         onMount={handleEditorDidMount}
                         theme="vs-dark"
                         options={{
-                            minimap: { enabled: false },
-                            scrollBeyondLastLine: false,
+                            minimap: { enabled: true },
+                            scrollBeyondLastLine: true,
                             fontSize: 14,
                             fontFamily: "'Fira Code', 'Monaco', monospace",
                             lineNumbers: 'on',
@@ -301,6 +315,12 @@ export default function PersonalConsole() {
                             padding: { top: 16 },
                             cursorBlinking: 'smooth',
                             cursorSmoothCaretAnimation: 'on',
+                            scrollbar: {
+                                vertical: 'visible',
+                                horizontal: 'visible',
+                                verticalScrollbarSize: 12,
+                                horizontalScrollbarSize: 12,
+                            },
                         }}
                     />
                 </div>

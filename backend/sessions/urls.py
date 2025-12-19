@@ -6,7 +6,7 @@ from .views import (
     CreateSessionView, ListSessionsView, SessionDetailView,
     JoinSessionView, EndSessionView, SessionParticipantsView,
     StudentCodeView, ErrorNotificationsView, MarkErrorReadView,
-    TeacherDashboardView
+    TeacherDashboardView, ReportActivityView
 )
 
 urlpatterns = [
@@ -19,5 +19,6 @@ urlpatterns = [
     path('<str:session_code>/dashboard/', TeacherDashboardView.as_view(), name='teacher-dashboard'),
     path('<str:session_code>/students/<int:student_id>/code/', StudentCodeView.as_view(), name='student-code'),
     path('<str:session_code>/errors/', ErrorNotificationsView.as_view(), name='error-notifications'),
+    path('<str:session_code>/activity/', ReportActivityView.as_view(), name='report-activity'),
     path('errors/<int:notification_id>/read/', MarkErrorReadView.as_view(), name='mark-error-read'),
 ]

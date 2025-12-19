@@ -257,3 +257,44 @@ class TeacherDashboardView(APIView):
             'session': CodingSessionSerializer(session).data,
             'students': dashboard_data
         })
+
+
+class ReportActivityView(APIView):
+    """Report student activity (tab switch, window blur) via REST API."""
+    
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, session_code):
+        activity_type = request.data.get('type')
+        
+        if not activity_type:
+            return Response(
+                {'error': 'Activity type is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        session = get_object_or_404(CodingSession, session_code=session_code)
+        
+        # Verify student is participant
+        participant = get_object_or_404(
+            SessionParticipant,
+            session=session,
+            student=request.user
+        )
+        
+        # Broadcast activity to session group (teachers will pick it up)
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'session_{session_code}',
+            {
+                'type': 'student_activity',
+                'student_id': request.user.id,
+                'activity_type': activity_type,
+                'timestamp': timezone.now().isoformat()
+            }
+        )
+        
+        return Response({'status': 'reported'})

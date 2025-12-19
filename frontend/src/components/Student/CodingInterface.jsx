@@ -284,9 +284,21 @@ export default function CodingInterface() {
         try {
             const response = await githubAPI.getRepos();
             setGithubRepos(response.data.repos || []);
-            // Set default filename based on language
-            const extensions = { python: 'py', javascript: 'js', c: 'c', cpp: 'cpp', java: 'java' };
-            setGithubFilename(`main.${extensions[language] || 'txt'}`);
+
+            // Auto-fill from localStorage if available
+            const lastRepo = localStorage.getItem('lastPushedRepo');
+            const lastFile = localStorage.getItem('lastPushedFile');
+
+            if (lastRepo) setSelectedRepo(lastRepo);
+
+            // Set default filename based on language OR use last used
+            if (lastFile) {
+                setGithubFilename(lastFile);
+            } else {
+                const extensions = { python: 'py', javascript: 'js', c: 'c', cpp: 'cpp', java: 'java' };
+                setGithubFilename(`main.${extensions[language] || 'txt'}`);
+            }
+
             setShowGithubModal(true);
         } catch (error) {
             console.error('Failed to load repos:', error);
@@ -308,6 +320,9 @@ export default function CodingInterface() {
 
             if (response.data.success) {
                 alert(`✅ Code pushed successfully!\n\nView: ${response.data.file_url}`);
+                // Save to localStorage for next time
+                localStorage.setItem('lastPushedRepo', selectedRepo);
+                localStorage.setItem('lastPushedFile', githubFilename);
                 setShowGithubModal(false);
             } else {
                 alert(`❌ Push failed: ${response.data.error}`);
@@ -318,6 +333,50 @@ export default function CodingInterface() {
             setIsPushing(false);
         }
     };
+
+    // Proctoring: Detect tab switching/blur
+    useEffect(() => {
+        if (!sessionCode) return;
+
+        const handleVisibilityChange = async () => {
+            if (document.hidden) {
+                // User switched tabs or minimized window
+                try {
+                    await codingAPI.reportActivity(sessionCode, 'tab_hidden');
+                    console.log('Reported: Tab Hidden');
+                } catch (e) {
+                    console.error('Failed to report activity', e);
+                }
+            } else {
+                // User returned
+                try {
+                    await codingAPI.reportActivity(sessionCode, 'tab_visible');
+                    console.log('Reported: Tab Visible');
+                } catch (e) {
+                    console.error('Failed to report activity', e);
+                }
+            }
+        };
+
+        const handleBlur = async () => {
+            // Window lost focus (e.g. clicked outside)
+            // We can treat this similar to hidden, or just log it
+            // For strict proctoring, we report it.
+            if (!document.hidden) { // Only report if not already covered by hidden
+                try {
+                    await codingAPI.reportActivity(sessionCode, 'window_blur');
+                } catch (e) { }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('blur', handleBlur);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('blur', handleBlur);
+        };
+    }, [sessionCode]);
 
     // Create new GitHub repo
     const createNewRepo = async () => {
@@ -458,8 +517,8 @@ export default function CodingInterface() {
                         onMount={handleEditorDidMount}
                         theme="vs-dark"
                         options={{
-                            minimap: { enabled: false },
-                            scrollBeyondLastLine: false,
+                            minimap: { enabled: true },
+                            scrollBeyondLastLine: true,
                             fontSize: 14,
                             fontFamily: "'Fira Code', 'Monaco', monospace",
                             lineNumbers: 'on',
@@ -469,6 +528,12 @@ export default function CodingInterface() {
                             padding: { top: 16 },
                             cursorBlinking: 'smooth',
                             cursorSmoothCaretAnimation: 'on',
+                            scrollbar: {
+                                vertical: 'visible',
+                                horizontal: 'visible',
+                                verticalScrollbarSize: 12,
+                                horizontalScrollbarSize: 12,
+                            },
                         }}
                     />
                 </div>

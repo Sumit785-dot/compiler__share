@@ -96,6 +96,16 @@ function StudentTile({ student, isSelected, onSelect, sessionCode }) {
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {/* Activity Alert Badge */}
+                    {student.activity_alert && (
+                        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-medium animate-pulse">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            {student.activity_alert}
+                        </div>
+                    )}
+
                     <div className={`w-2.5 h-2.5 rounded-full ${getStatusColor()}`}
                         style={{ boxShadow: student.is_connected ? `0 0 8px ${student.has_errors ? 'rgba(239,68,68,0.6)' : 'rgba(34,197,94,0.6)'}` : 'none' }} />
                     <span className={`text-xs ${student.is_connected ? (student.has_errors ? 'text-red-400' : 'text-green-400') : 'text-gray-500'}`}>
@@ -199,8 +209,10 @@ function StudentTile({ student, isSelected, onSelect, sessionCode }) {
                             wordWrap: 'on',
                             automaticLayout: true,
                             scrollbar: {
-                                vertical: 'hidden',
-                                horizontal: 'hidden',
+                                vertical: 'visible',
+                                horizontal: 'visible',
+                                verticalScrollbarSize: 10,
+                                horizontalScrollbarSize: 10,
                             },
                         }}
                     />
@@ -317,6 +329,7 @@ export default memo(StudentTile, (prevProps, nextProps) => {
         prevProps.student.code_content === nextProps.student.code_content &&
         prevProps.student.is_connected === nextProps.student.is_connected &&
         prevProps.student.has_errors === nextProps.student.has_errors &&
+        prevProps.student.activity_alert === nextProps.student.activity_alert &&
         prevProps.student.language === nextProps.student.language &&
         JSON.stringify(prevProps.student.recent_logs?.[0]) === JSON.stringify(nextProps.student.recent_logs?.[0]) &&
         prevProps.isSelected === nextProps.isSelected
