@@ -106,8 +106,10 @@ class GitHubAuthView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        # Use user ID as state for security
-        state = str(request.user.id)
+        # Use user ID as state for security (and optional next path)
+        # Format: userid|nextpath
+        next_path = request.GET.get('next', '/join')
+        state = f"{request.user.id}|{next_path}"
         auth_url = github_utils.get_github_auth_url(state)
         return Response({'auth_url': auth_url})
 
@@ -119,16 +121,33 @@ class GitHubCallbackView(APIView):
     
     def get(self, request):
         code = request.GET.get('code')
-        state = request.GET.get('state')
+        state_str = request.GET.get('state')
         
-        if not code:
-            return redirect('https://compiler-share.vercel.app/join?github=error')
+        from django.conf import settings
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        
+        # Parse state to get next path
+        next_path = '/join' # Default
+        user_id = None
+        
+        if state_str:
+            parts = state_str.split('|')
+            if len(parts) >= 1:
+                user_id = parts[0]
+            if len(parts) >= 2:
+                next_path = parts[1]
+        
+        error_redirect = f"{frontend_url}{next_path}?github=error"
+        success_redirect = f"{frontend_url}{next_path}?github=success"
+        
+        if not code or not user_id:
+            return redirect(error_redirect)
         
         # Exchange code for token
         token_data = github_utils.exchange_code_for_token(code)
         
         if not token_data or 'access_token' not in token_data:
-            return redirect('https://compiler-share.vercel.app/join?github=error')
+            return redirect(error_redirect)
         
         access_token = token_data['access_token']
         
@@ -136,13 +155,13 @@ class GitHubCallbackView(APIView):
         github_user = github_utils.get_github_user(access_token)
         
         if not github_user:
-            return redirect('https://compiler-share.vercel.app/join?github=error')
+            return redirect(error_redirect)
         
         # Find user by state (user ID)
         try:
-            user = User.objects.get(id=int(state))
+            user = User.objects.get(id=int(user_id))
         except (User.DoesNotExist, ValueError):
-            return redirect('https://compiler-share.vercel.app/join?github=error')
+            return redirect(error_redirect)
         
         # Save or update GitHub connection
         GitHubConnection.objects.update_or_create(
@@ -155,7 +174,7 @@ class GitHubCallbackView(APIView):
         )
         
         # Redirect back to app with success
-        return redirect('https://compiler-share.vercel.app/join?github=success')
+        return redirect(success_redirect)
 
 
 class GitHubStatusView(APIView):

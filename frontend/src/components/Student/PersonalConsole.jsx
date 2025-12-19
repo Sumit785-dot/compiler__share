@@ -1,9 +1,10 @@
 /**
  * Personal Console - Student's personal coding environment (no session required)
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
-import { codingAPI } from '../../services/api';
+import { codingAPI, githubAPI } from '../../services/api';
 import Console from './Console';
 
 // Map our language IDs to Monaco editor language IDs
@@ -28,10 +29,45 @@ const codeTemplates = {
 };
 
 export default function PersonalConsole() {
+    const location = useLocation();
     const [code, setCode] = useState(codeTemplates.python);
     const [language, setLanguage] = useState('python');
     const [output, setOutput] = useState([]);
     const [isRunning, setIsRunning] = useState(false);
+
+    // GitHub integration state
+    const [githubConnected, setGithubConnected] = useState(false);
+    const [githubUsername, setGithubUsername] = useState('');
+    const [showGithubModal, setShowGithubModal] = useState(false);
+    const [githubRepos, setGithubRepos] = useState([]);
+    const [selectedRepo, setSelectedRepo] = useState('');
+    const [githubFilename, setGithubFilename] = useState('');
+    const [isPushing, setIsPushing] = useState(false);
+    // New repo creation state
+    const [showCreateRepo, setShowCreateRepo] = useState(false);
+    const [newRepoName, setNewRepoName] = useState('');
+    const [newRepoPrivate, setNewRepoPrivate] = useState(false);
+    const [isCreatingRepo, setIsCreatingRepo] = useState(false);
+
+    // Check GitHub connection status
+    useEffect(() => {
+        const checkGitHub = async () => {
+            try {
+                const response = await githubAPI.getStatus();
+                setGithubConnected(response.data.connected);
+                setGithubUsername(response.data.github_username || '');
+            } catch (error) {
+                console.log('GitHub not connected');
+            }
+        };
+        checkGitHub();
+
+        // Check for OAuth callback success/error
+        const params = new URLSearchParams(location.search);
+        if (params.get('github') === 'success') {
+            checkGitHub();
+        }
+    }, [location.search]);
 
     // Handle language change
     const handleLanguageChange = (newLang) => {
@@ -74,6 +110,86 @@ export default function PersonalConsole() {
 
     const clearConsole = () => setOutput([]);
 
+    // Connect GitHub account
+    const connectGitHub = async () => {
+        try {
+            const response = await githubAPI.getAuthUrl('/console');
+            window.location.href = response.data.auth_url;
+        } catch (error) {
+            console.error('Failed to get GitHub auth URL:', error);
+        }
+    };
+
+    // Open push to GitHub modal
+    const openPushModal = async () => {
+        try {
+            const response = await githubAPI.getRepos();
+            setGithubRepos(response.data.repos || []);
+            // Set default filename based on language
+            const extensions = { python: 'py', javascript: 'js', c: 'c', cpp: 'cpp', java: 'java' };
+            setGithubFilename(`main.${extensions[language] || 'txt'}`);
+            setShowGithubModal(true);
+        } catch (error) {
+            console.error('Failed to load repos:', error);
+        }
+    };
+
+    // Push code to GitHub
+    const pushToGitHub = async () => {
+        if (!selectedRepo || !githubFilename) return;
+
+        setIsPushing(true);
+        try {
+            const response = await githubAPI.pushCode(
+                selectedRepo,
+                githubFilename,
+                code,
+                `Update ${githubFilename} from CodeMonitor`
+            );
+
+            if (response.data.success) {
+                alert(`✅ Code pushed successfully!\n\nView: ${response.data.file_url}`);
+                setShowGithubModal(false);
+            } else {
+                alert(`❌ Push failed: ${response.data.error}`);
+            }
+        } catch (error) {
+            alert(`❌ Push failed: ${error.message}`);
+        } finally {
+            setIsPushing(false);
+        }
+    };
+
+    // Create new GitHub repo
+    const createNewRepo = async () => {
+        if (!newRepoName.trim()) return;
+
+        setIsCreatingRepo(true);
+        try {
+            const response = await githubAPI.createRepo(
+                newRepoName.trim(),
+                'Created from CodeMonitor',
+                newRepoPrivate
+            );
+
+            if (response.data.success) {
+                alert(`✅ Repository created: ${response.data.repo.html_url}`);
+                // Add to repos list and select it
+                const newRepo = response.data.repo;
+                setGithubRepos(prev => [newRepo, ...prev]);
+                setSelectedRepo(newRepo.full_name);
+                setShowCreateRepo(false);
+                setNewRepoName('');
+            } else {
+                alert(`❌ Failed: ${response.data.error}`);
+            }
+        } catch (error) {
+            alert(`❌ Failed: ${error.response?.data?.error || error.message}`);
+        } finally {
+            setIsCreatingRepo(false);
+        }
+    };
+
     return (
         <div className="h-screen flex flex-col bg-dark-900">
             {/* Background effects */}
@@ -108,6 +224,31 @@ export default function PersonalConsole() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {/* GitHub Button */}
+                    {githubConnected ? (
+                        <button
+                            onClick={openPushModal}
+                            className="btn bg-gray-800 text-white hover:bg-gray-700 border border-gray-600"
+                            title={`Push to GitHub (@${githubUsername})`}
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                            </svg>
+                            Push to GitHub
+                        </button>
+                    ) : (
+                        <button
+                            onClick={connectGitHub}
+                            className="btn bg-gray-800 text-white hover:bg-gray-700 border border-gray-600"
+                            title="Connect GitHub account"
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                            </svg>
+                            Connect GitHub
+                        </button>
+                    )}
+
                     {/* Run Button */}
                     <button
                         onClick={runCode}
@@ -168,6 +309,130 @@ export default function PersonalConsole() {
                     />
                 </div>
             </div>
+
+            {/* GitHub Push Modal */}
+            {showGithubModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                    onClick={() => setShowGithubModal(false)}
+                >
+                    <div
+                        className="bg-dark-800 border border-dark-600 rounded-xl w-full max-w-md m-4 p-6 shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                            </svg>
+                            Push to GitHub
+                        </h3>
+
+                        <div className="space-y-4">
+                            {/* Create New Repo Toggle */}
+                            {!showCreateRepo ? (
+                                <>
+                                    {/* Repo Selector */}
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">Repository</label>
+                                        <select
+                                            value={selectedRepo}
+                                            onChange={(e) => setSelectedRepo(e.target.value)}
+                                            className="input px-4 py-2 w-full"
+                                        >
+                                            <option value="">Select a repository...</option>
+                                            {githubRepos.map(repo => (
+                                                <option key={repo.id} value={repo.full_name}>
+                                                    {repo.name} {repo.private ? '🔒' : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            onClick={() => setShowCreateRepo(true)}
+                                            className="text-sm text-blue-400 hover:text-blue-300 mt-2"
+                                        >
+                                            + Create New Repository
+                                        </button>
+                                    </div>
+
+                                    {/* Filename/Path Input */}
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">File Path</label>
+                                        <input
+                                            type="text"
+                                            value={githubFilename}
+                                            onChange={(e) => setGithubFilename(e.target.value)}
+                                            placeholder="src/main.py or just main.py"
+                                            className="input px-4 py-2 w-full"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">Use folders like: src/code.py</p>
+                                    </div>
+
+                                    {/* Push Buttons */}
+                                    <div className="flex justify-end gap-3 pt-4">
+                                        <button
+                                            onClick={() => setShowGithubModal(false)}
+                                            className="btn btn-secondary"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={pushToGitHub}
+                                            disabled={!selectedRepo || !githubFilename || isPushing}
+                                            className="btn btn-primary disabled:opacity-50"
+                                        >
+                                            {isPushing ? 'Pushing...' : 'Push Code'}
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Create New Repo Form */}
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-1">Repository Name</label>
+                                        <input
+                                            type="text"
+                                            value={newRepoName}
+                                            onChange={(e) => setNewRepoName(e.target.value)}
+                                            placeholder="my-new-project"
+                                            className="input px-4 py-2 w-full"
+                                        />
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id="privateRepo"
+                                            checked={newRepoPrivate}
+                                            onChange={(e) => setNewRepoPrivate(e.target.checked)}
+                                            className="w-4 h-4"
+                                        />
+                                        <label htmlFor="privateRepo" className="text-sm text-gray-400">
+                                            Make repository private 🔒
+                                        </label>
+                                    </div>
+
+                                    {/* Create Buttons */}
+                                    <div className="flex justify-end gap-3 pt-4">
+                                        <button
+                                            onClick={() => setShowCreateRepo(false)}
+                                            className="btn btn-secondary"
+                                        >
+                                            Back
+                                        </button>
+                                        <button
+                                            onClick={createNewRepo}
+                                            disabled={!newRepoName.trim() || isCreatingRepo}
+                                            className="btn btn-primary disabled:opacity-50"
+                                        >
+                                            {isCreatingRepo ? 'Creating...' : 'Create Repo'}
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

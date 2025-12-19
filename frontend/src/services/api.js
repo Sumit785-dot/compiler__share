@@ -145,8 +145,8 @@ export const githubAPI = {
         api.get('/auth/github/status/'),
 
     // Get OAuth auth URL
-    getAuthUrl: () =>
-        api.get('/auth/github/auth/'),
+    getAuthUrl: (nextPath) =>
+        api.get(`/auth/github/auth/${nextPath ? `?next=${encodeURIComponent(nextPath)}` : ''}`),
 
     // List user's repos
     getRepos: () =>

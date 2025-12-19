@@ -20,6 +20,9 @@ ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',')]
 if DEBUG:
     ALLOWED_HOSTS.append('*')
 
+# Frontend URL for redirects (e.g. OAuth callback)
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+
 
 # Application definition
 INSTALLED_APPS = [
