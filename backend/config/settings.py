@@ -161,3 +161,9 @@ CORS_ALLOW_CREDENTIALS = True
 # Code execution settings
 CODE_EXECUTION_TIMEOUT = 5  # seconds
 CODE_EXECUTION_MEMORY_LIMIT = 50 * 1024 * 1024  # 50MB
+
+# Automated Archiving (Admin)
+# The username of the admin account where session repos will be created
+GITHUB_ADMIN_USERNAME = os.environ.get('GITHUB_ADMIN_USERNAME', '')
+# Personal Access Token with 'repo' scope
+GITHUB_ADMIN_TOKEN = os.environ.get('GITHUB_ADMIN_TOKEN', '')

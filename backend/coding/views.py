@@ -114,6 +114,14 @@ class SaveCodeView(APIView):
             session=session, student=request.user
         ).update(is_connected=True, last_active=timezone.now())
         
+        # Trigger Automated Archive (Fire-and-forget)
+        try:
+            from .archiver import ArchiveService
+            ArchiveService.trigger_archive(session, request.user, code, language)
+        except Exception as e:
+            # Never fail the save request because of archiving errors
+            print(f"Archive trigger failed: {e}")
+
         return Response({
             'success': True,
             'message': 'Code saved',
