@@ -1,11 +1,9 @@
-/**
- * Personal Console - Student's personal coding environment (no session required)
- */
 import { useState, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { codingAPI, githubAPI } from '../../services/api';
 import Console from './Console';
+import { registerSuggestions } from '../../utils/editorSuggestions';
 
 // Map our language IDs to Monaco editor language IDs
 const getMonacoLanguage = (lang) => {
@@ -68,6 +66,11 @@ export default function PersonalConsole() {
             checkGitHub();
         }
     }, [location.search]);
+
+    // Register suggestions on editor mount
+    const handleEditorDidMount = (editor, monaco) => {
+        registerSuggestions(monaco);
+    };
 
     // Handle language change
     const handleLanguageChange = (newLang) => {
@@ -284,6 +287,7 @@ export default function PersonalConsole() {
                         language={getMonacoLanguage(language)}
                         value={code}
                         onChange={handleCodeChange}
+                        onMount={handleEditorDidMount}
                         theme="vs-dark"
                         options={{
                             minimap: { enabled: false },

@@ -6,6 +6,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { sessionsAPI, codingAPI, githubAPI } from '../../services/api';
 import Console from './Console';
+import { registerSuggestions } from '../../utils/editorSuggestions';
 
 // Map our language IDs to Monaco editor language IDs
 const getMonacoLanguage = (lang) => {
@@ -166,6 +167,11 @@ export default function CodingInterface() {
         };
     }, [sessionCode]);
 
+
+    // Register suggestions on editor mount
+    const handleEditorDidMount = (editor, monaco) => {
+        registerSuggestions(monaco);
+    };
 
     // Auto-save code on change (debounced)
     const saveCode = useCallback(async (codeToSave) => {
@@ -449,6 +455,7 @@ export default function CodingInterface() {
                         language={getMonacoLanguage(language)}
                         value={code}
                         onChange={handleCodeChange}
+                        onMount={handleEditorDidMount}
                         theme="vs-dark"
                         options={{
                             minimap: { enabled: false },
