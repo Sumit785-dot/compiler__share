@@ -265,11 +265,11 @@ function StudentTile({ student, isSelected, onSelect, sessionCode }) {
             {/* Expanded Console Modal */}
             {showExpandedConsole && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
                     onClick={() => setShowExpandedConsole(false)}
                 >
                     <div
-                        className="bg-dark-800 border border-dark-600 rounded-xl w-full max-w-3xl max-h-[80vh] m-4 flex flex-col shadow-2xl"
+                        className="bg-dark-800 border border-dark-600 rounded-xl w-[95vw] h-[90vh] m-4 flex flex-col shadow-2xl overflow-hidden"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
