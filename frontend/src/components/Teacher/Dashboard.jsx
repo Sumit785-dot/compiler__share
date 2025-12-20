@@ -52,13 +52,19 @@ export default function TeacherDashboard() {
         loadSession();
     }, [sessionCode, navigate]);
 
-    // Connect to WebSocket - DISABLED for now due to connection issues
-    // Dashboard works via REST API polling
+    // Connect to WebSocket for real-time updates
     useEffect(() => {
-        console.log('WebSocket disabled on Teacher Dashboard - using REST API polling');
-    }, [sessionCode]);
+        if (sessionCode) {
+            console.log('Connecting to WebSocket for session:', sessionCode);
+            connect(sessionCode);
+        }
 
-    // Poll for updates every 3 seconds (replaces WebSocket real-time updates)
+        return () => {
+            disconnect();
+        };
+    }, [sessionCode, connect, disconnect]);
+
+    // Poll for updates every 10 seconds (fallback for WebSocket)
     useEffect(() => {
         if (!sessionCode) return;
 
@@ -78,8 +84,8 @@ export default function TeacherDashboard() {
             }
         };
 
-        // Poll every 3 seconds
-        const interval = setInterval(pollData, 3000);
+        // Poll every 10 seconds (WebSocket handles real-time, this is fallback)
+        const interval = setInterval(pollData, 10000);
 
         return () => clearInterval(interval);
     }, [sessionCode]);
