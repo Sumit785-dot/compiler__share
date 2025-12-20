@@ -2,6 +2,7 @@
  * Student Tile - Individual student view in teacher dashboard
  */
 import { useState, useEffect, memo } from 'react';
+import { createPortal } from 'react-dom';
 import Editor from '@monaco-editor/react';
 import { codingAPI } from '../../services/api';
 
@@ -280,13 +281,13 @@ function StudentTile({ student, isSelected, onSelect, sessionCode }) {
             </div>
 
             {/* Expanded Console Modal */}
-            {showExpandedConsole && (
+            {showExpandedConsole && createPortal(
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm"
                     onClick={() => setShowExpandedConsole(false)}
                 >
                     <div
-                        className="bg-dark-800 border border-dark-600 rounded-xl w-[95vw] h-[90vh] m-4 flex flex-col shadow-2xl overflow-hidden"
+                        className="bg-dark-800 border border-dark-600 rounded-xl w-[95vw] h-[90vh] flex flex-col shadow-2xl overflow-hidden relative"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
@@ -311,17 +312,15 @@ function StudentTile({ student, isSelected, onSelect, sessionCode }) {
                         </div>
 
                         {/* Modal Body - Full Console Output */}
-                        <div className="flex-1 overflow-y-auto p-4 bg-dark-900">
-                            <div className="font-mono text-base">
-                                {recentOutput ? (
-                                    <pre className={`whitespace-pre-wrap break-words ${(recentOutput.log_type === 'error' || recentOutput.success === false) ? 'text-red-400' : 'text-green-400'
-                                        }`}>
-                                        {recentOutput.message || 'No output'}
-                                    </pre>
-                                ) : (
-                                    <span className="text-gray-500 italic">No output yet</span>
-                                )}
-                            </div>
+                        <div className="flex-1 overflow-y-auto p-4 bg-dark-900 font-mono text-base">
+                            {recentOutput ? (
+                                <pre className={`whitespace-pre-wrap break-words ${(recentOutput.log_type === 'error' || recentOutput.success === false) ? 'text-red-400' : 'text-green-400'
+                                    }`}>
+                                    {recentOutput.message || 'No output'}
+                                </pre>
+                            ) : (
+                                <span className="text-gray-500 italic">No output yet</span>
+                            )}
                         </div>
 
                         {/* Modal Footer */}
@@ -334,7 +333,8 @@ function StudentTile({ student, isSelected, onSelect, sessionCode }) {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Edit Mode Indicator */}
