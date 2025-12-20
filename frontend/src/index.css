@@ -13,6 +13,7 @@
   box-sizing: border-box;
 }
 
+/* Dark Theme (default) */
 body {
   font-family: var(--font-sans);
   background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
@@ -20,6 +21,23 @@ body {
   color: #e2e8f0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Light Theme */
+.light body,
+html.light body {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+  color: #1e293b;
+}
+
+/* Light theme scrollbar */
+.light ::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.8);
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b82f6, #8b5cf6);
 }
 
 /* Custom scrollbar */
@@ -198,4 +216,99 @@ body {
 
 .console-warning {
   @apply text-yellow-400;
+}
+
+/* ========== LIGHT THEME OVERRIDES ========== */
+
+/* Light theme glass effect */
+.light .glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.light .glass-light {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+/* Light theme cards */
+.light .card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Light theme text colors */
+.light .text-white {
+  color: #1e293b;
+}
+
+.light .text-gray-400 {
+  color: #64748b;
+}
+
+.light .text-gray-500 {
+  color: #475569;
+}
+
+/* Light theme backgrounds */
+.light .bg-dark-800,
+.light .bg-dark-900 {
+  background-color: #f8fafc;
+}
+
+.light .bg-dark-700 {
+  background-color: #f1f5f9;
+}
+
+.light .bg-dark-600 {
+  background-color: #e2e8f0;
+}
+
+/* Light theme borders */
+.light .border-dark-600,
+.light .border-dark-700 {
+  border-color: #cbd5e1;
+}
+
+.light .border-dark-500 {
+  border-color: #94a3b8;
+}
+
+/* Light theme inputs */
+.light .input {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.light .input::placeholder {
+  color: #94a3b8;
+}
+
+/* Light theme buttons */
+.light .btn-secondary {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+.light .btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+/* Light theme console */
+.light .console-output {
+  color: #16a34a;
+}
+
+.light .console-error {
+  color: #dc2626;
+}
+
+/* Monaco Editor - Light Theme */
+.light .monaco-editor {
+  border: 1px solid #e2e8f0;
 }
