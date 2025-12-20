@@ -55,7 +55,7 @@ export default function PersonalConsole() {
                 setGithubConnected(response.data.connected);
                 setGithubUsername(response.data.github_username || '');
             } catch (error) {
-                console.log('GitHub not connected');
+                // OPTIMIZATION: GitHub not connected - silently ignore
             }
         };
         checkGitHub();

@@ -7,8 +7,8 @@ import { useAuth } from './AuthContext';
 
 const WebSocketContext = createContext(null);
 
-// Connect directly to Django backend for WebSocket
-const WS_BASE_URL = 'ws://localhost:8000';
+// SECURITY: Use environment variable for WebSocket URL, fallback to localhost for dev
+const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
 
 export function WebSocketProvider({ children }) {
     const { user } = useAuth();
@@ -41,11 +41,11 @@ export function WebSocketProvider({ children }) {
         }
 
         const wsUrl = `${WS_BASE_URL}/ws/session/${code}/?token=${token}`;
-        console.log('Connecting to WebSocket:', wsUrl);
+        // OPTIMIZATION: Connecting to WebSocket session
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
-            console.log('WebSocket connected to session:', code);
+            // OPTIMIZATION: WebSocket connected
             setIsConnected(true);
             setSessionCode(code);
             reconnectAttempts.current = 0;
@@ -63,9 +63,9 @@ export function WebSocketProvider({ children }) {
                 const data = JSON.parse(event.data);
                 setLastMessage(data);
 
-                // Log connection confirmation
+                // OPTIMIZATION: Connection confirmed from server
                 if (data.type === 'connection_confirmed') {
-                    console.log('WebSocket connection confirmed:', data);
+                    // WebSocket connection confirmed
                 }
 
                 // Call registered listeners for this message type
@@ -81,7 +81,7 @@ export function WebSocketProvider({ children }) {
         };
 
         ws.onclose = (event) => {
-            console.log('WebSocket disconnected:', event.code, event.reason);
+            // OPTIMIZATION: WebSocket closed
             setIsConnected(false);
 
             // Clear heartbeat
@@ -102,7 +102,7 @@ export function WebSocketProvider({ children }) {
             if (shouldReconnect) {
                 reconnectAttempts.current++;
                 const delay = Math.min(3000 * reconnectAttempts.current, 15000);
-                console.log(`Reconnect attempt ${reconnectAttempts.current}/${maxReconnectAttempts} in ${delay}ms`);
+                // OPTIMIZATION: Scheduling reconnect attempt
                 reconnectTimeout.current = setTimeout(() => {
                     connect(sessionCode);
                 }, delay);

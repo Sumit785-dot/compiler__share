@@ -27,7 +27,7 @@ function StudentTile({ student, isSelected, onSelect, onExpand, sessionCode }) {
         setIsSaving(true);
         try {
             await codingAPI.teacherSaveCode(student.id, localCode, student.language || 'python', sessionCode);
-            console.log('Teacher edit saved successfully');
+            // OPTIMIZATION: Teacher edit saved successfully
         } catch (error) {
             console.error('Failed to save teacher edit:', error);
         } finally {

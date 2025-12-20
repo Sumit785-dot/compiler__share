@@ -1,12 +1,16 @@
 """
 REST API views for code execution.
 """
+import logging
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+
+# OPTIMIZATION: Use proper logging instead of print statements
+logger = logging.getLogger(__name__)
 
 from .executor import CodeExecutor
 from sessions.models import CodingSession, CodeSnapshot, SessionParticipant
@@ -119,8 +123,8 @@ class SaveCodeView(APIView):
             from .archiver import ArchiveService
             ArchiveService.trigger_archive(session, request.user, code, language)
         except Exception as e:
-            # Never fail the save request because of archiving errors
-            print(f"Archive trigger failed: {e}")
+            # OPTIMIZATION: Never fail the save request because of archiving errors
+            logger.warning(f"Archive trigger failed: {e}")
 
         return Response({
             'success': True,

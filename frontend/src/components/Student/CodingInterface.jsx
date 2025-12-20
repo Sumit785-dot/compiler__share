@@ -66,7 +66,7 @@ export default function CodingInterface() {
                 setGithubConnected(response.data.connected);
                 setGithubUsername(response.data.github_username || '');
             } catch (error) {
-                console.log('GitHub not connected');
+                // OPTIMIZATION: GitHub not connected - silently ignore
             }
         };
         checkGitHub();
@@ -96,7 +96,7 @@ export default function CodingInterface() {
                         setLanguage(codeResponse.data.language || 'python');
                     }
                 } catch (codeError) {
-                    console.log('No saved code found, using default');
+                    // OPTIMIZATION: No saved code found, using default template
                 }
             } catch (error) {
                 console.error('Failed to load session:', error);
@@ -138,11 +138,11 @@ export default function CodingInterface() {
                         // Check if user has unsaved changes
                         const hasUnsavedChanges = prevCode !== lastSavedCodeRef.current && lastSavedCodeRef.current !== '';
                         if (hasUnsavedChanges) {
-                            console.log('Skipping server update - user has unsaved changes');
+                            // OPTIMIZATION: Skipping server update - user has unsaved changes
                             return prevCode;
                         }
                         if (prevCode !== serverCode) {
-                            console.log('Teacher edit received!');
+                            // Teacher edit received
                             return serverCode;
                         }
                         return prevCode;
@@ -343,17 +343,17 @@ export default function CodingInterface() {
                 // User switched tabs or minimized window
                 try {
                     await codingAPI.reportActivity(sessionCode, 'tab_hidden');
-                    console.log('Reported: Tab Hidden');
+                    // OPTIMIZATION: Tab hidden activity reported
                 } catch (e) {
-                    console.error('Failed to report activity', e);
+                    // Silently fail proctoring report
                 }
             } else {
                 // User returned
                 try {
                     await codingAPI.reportActivity(sessionCode, 'tab_visible');
-                    console.log('Reported: Tab Visible');
+                    // OPTIMIZATION: Tab visible activity reported
                 } catch (e) {
-                    console.error('Failed to report activity', e);
+                    // Silently fail proctoring report
                 }
             }
         };
@@ -399,19 +399,19 @@ export default function CodingInterface() {
             if (isSplitScreen && lastReportedState !== 'split_screen') {
                 try {
                     await codingAPI.reportActivity(sessionCode, 'split_screen');
-                    console.log('Reported: Split Screen Detected', `(${widthPercentage.toFixed(1)}% of screen)`);
+                    // OPTIMIZATION: Split screen detected and reported
                     lastReportedState = 'split_screen';
                 } catch (e) {
-                    console.error('Failed to report split screen', e);
+                    // Silently fail proctoring report
                 }
             } else if (!isSplitScreen && lastReportedState === 'split_screen') {
                 // User returned to full screen
                 try {
                     await codingAPI.reportActivity(sessionCode, 'fullscreen_restored');
-                    console.log('Reported: Full Screen Restored');
+                    // OPTIMIZATION: Full screen restored and reported
                     lastReportedState = null;
                 } catch (e) {
-                    console.error('Failed to report fullscreen restore', e);
+                    // Silently fail proctoring report
                 }
             }
         };

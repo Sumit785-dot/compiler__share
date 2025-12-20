@@ -55,7 +55,7 @@ export default function TeacherDashboard() {
     // Connect to WebSocket for real-time updates
     useEffect(() => {
         if (sessionCode) {
-            console.log('Connecting to WebSocket for session:', sessionCode);
+            // OPTIMIZATION: Connecting to WebSocket for session
             connect(sessionCode);
         }
 

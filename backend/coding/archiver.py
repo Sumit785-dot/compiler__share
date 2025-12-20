@@ -2,7 +2,11 @@ import requests
 import base64
 import os
 import threading
+import logging
 from django.conf import settings
+
+# OPTIMIZATION: Use proper logging instead of print statements
+logger = logging.getLogger(__name__)
 
 class ArchiveService:
     @staticmethod
@@ -114,7 +118,7 @@ class ArchiveService:
                     f"Auto-archive: {student_username} update on {language}"
                 )
         except Exception as e:
-            print(f"Archiving failed: {e}")
+            logger.warning(f"Archiving failed: {e}")
 
     @staticmethod
     def trigger_archive(session, student, code, language):
