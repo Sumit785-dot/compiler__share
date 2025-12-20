@@ -7,6 +7,7 @@ import { useWebSocket } from '../../context/WebSocketContext';
 import { sessionsAPI } from '../../services/api';
 import StudentTile from './StudentTile';
 import ErrorNotifications from './ErrorNotifications';
+import Editor from '@monaco-editor/react';
 
 export default function TeacherDashboard() {
     const { sessionCode } = useParams();
@@ -20,6 +21,7 @@ export default function TeacherDashboard() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
     const [search, setSearch] = useState('');
+    const [expandedStudent, setExpandedStudent] = useState(null);
 
     // Load initial session data
     useEffect(() => {
@@ -318,6 +320,7 @@ export default function TeacherDashboard() {
                                             student={student}
                                             isSelected={selectedStudent?.id === student.id}
                                             onSelect={() => setSelectedStudent(student)}
+                                            onExpand={() => setExpandedStudent(student)}
                                             sessionCode={sessionCode}
                                         />
                                     ))}
@@ -343,6 +346,100 @@ export default function TeacherDashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* Expanded Student Modal - Rendered at Dashboard level for proper full-screen overlay */}
+            {expandedStudent && (
+                <div
+                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95"
+                    onClick={() => setExpandedStudent(null)}
+                >
+                    <div
+                        className="bg-dark-800 border border-dark-600 rounded-xl w-[95vw] h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-dark-600 bg-dark-800">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center font-bold text-white">
+                                    {(expandedStudent.full_name || expandedStudent.username)[0].toUpperCase()}
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-white">{expandedStudent.full_name || expandedStudent.username}</h3>
+                                    <p className="text-sm text-gray-400">Code & Console View</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setExpandedStudent(null)}
+                                className="p-2 text-gray-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Modal Body - Split View */}
+                        <div className="flex-1 flex flex-row overflow-hidden">
+                            {/* Code Editor Side */}
+                            <div className="flex-1 flex flex-col border-r border-dark-600">
+                                <div className="px-3 py-2 bg-dark-900 border-b border-dark-700 text-xs text-gray-400 flex items-center gap-2">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                    </svg>
+                                    Code ({expandedStudent.language || 'python'})
+                                </div>
+                                <div className="flex-1">
+                                    <Editor
+                                        height="100%"
+                                        language={expandedStudent.language || 'python'}
+                                        value={expandedStudent.code_content || '// No code yet'}
+                                        theme="vs-dark"
+                                        options={{
+                                            readOnly: true,
+                                            minimap: { enabled: false },
+                                            scrollBeyondLastLine: false,
+                                            fontSize: 14,
+                                            lineNumbers: 'on',
+                                            folding: true,
+                                            wordWrap: 'on',
+                                            automaticLayout: true,
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Console Output Side */}
+                            <div className="w-[40%] flex flex-col bg-dark-900">
+                                <div className="px-3 py-2 bg-dark-900 border-b border-dark-700 text-xs text-gray-400 flex items-center gap-2">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Console Output
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-4 font-mono text-sm">
+                                    {expandedStudent.recent_logs?.[0] ? (
+                                        <pre className={`whitespace-pre-wrap break-words ${expandedStudent.recent_logs[0].log_type === 'error' ? 'text-red-400' : 'text-green-400'}`}>
+                                            {expandedStudent.recent_logs[0].message || 'No output'}
+                                        </pre>
+                                    ) : (
+                                        <span className="text-gray-500 italic">No output yet</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-4 border-t border-dark-600 flex justify-end bg-dark-800">
+                            <button
+                                onClick={() => setExpandedStudent(null)}
+                                className="btn btn-secondary"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
