@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useWebSocket } from '../../context/WebSocketContext';
-import { sessionsAPI } from '../../services/api';
+import { sessionsAPI, codingAPI } from '../../services/api';
 import StudentTile from './StudentTile';
 import ErrorNotifications from './ErrorNotifications';
 import Editor from '@monaco-editor/react';
@@ -22,6 +22,11 @@ export default function TeacherDashboard() {
     const [filter, setFilter] = useState('all');
     const [search, setSearch] = useState('');
     const [expandedStudent, setExpandedStudent] = useState(null);
+    const [expandedCode, setExpandedCode] = useState('');
+    const [expandedOutput, setExpandedOutput] = useState(null);
+    const [isExpandedRunning, setIsExpandedRunning] = useState(false);
+    const [isExpandedEditing, setIsExpandedEditing] = useState(false);
+    const [isExpandedSaving, setIsExpandedSaving] = useState(false);
 
     // Load initial session data
     useEffect(() => {
@@ -351,7 +356,12 @@ export default function TeacherDashboard() {
             {expandedStudent && (
                 <div
                     className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95"
-                    onClick={() => setExpandedStudent(null)}
+                    onClick={() => {
+                        setExpandedStudent(null);
+                        setExpandedCode('');
+                        setExpandedOutput(null);
+                        setIsExpandedEditing(false);
+                    }}
                 >
                     <div
                         className="bg-dark-800 border border-dark-600 rounded-xl w-[95vw] h-[90vh] flex flex-col shadow-2xl overflow-hidden"
@@ -368,35 +378,150 @@ export default function TeacherDashboard() {
                                     <p className="text-sm text-gray-400">Code & Console View</p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setExpandedStudent(null)}
-                                className="p-2 text-gray-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-3">
+                                {/* Run Button */}
+                                <button
+                                    onClick={async () => {
+                                        setIsExpandedRunning(true);
+                                        setExpandedOutput(null);
+                                        try {
+                                            const codeToRun = expandedCode || expandedStudent.code_content;
+                                            const response = await codingAPI.execute(codeToRun, expandedStudent.language || 'python', sessionCode);
+                                            setExpandedOutput({
+                                                success: response.data.success,
+                                                message: response.data.output || response.data.error
+                                            });
+                                        } catch (error) {
+                                            setExpandedOutput({
+                                                success: false,
+                                                message: error.message || 'Execution failed'
+                                            });
+                                        } finally {
+                                            setIsExpandedRunning(false);
+                                        }
+                                    }}
+                                    disabled={isExpandedRunning}
+                                    className="btn btn-primary disabled:opacity-50"
+                                >
+                                    {isExpandedRunning ? (
+                                        <>
+                                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                            </svg>
+                                            Running...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                                            </svg>
+                                            Run
+                                        </>
+                                    )}
+                                </button>
+
+                                {/* Edit/Save Button */}
+                                {!isExpandedEditing ? (
+                                    <button
+                                        onClick={() => {
+                                            setExpandedCode(expandedStudent.code_content || '');
+                                            setIsExpandedEditing(true);
+                                        }}
+                                        className="btn btn-secondary"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                        Edit
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={async () => {
+                                            setIsExpandedSaving(true);
+                                            try {
+                                                await codingAPI.teacherSaveCode(expandedStudent.id, expandedCode, expandedStudent.language || 'python', sessionCode);
+                                                // Update local student data
+                                                setStudents(prev => prev.map(s =>
+                                                    s.id === expandedStudent.id ? { ...s, code_content: expandedCode } : s
+                                                ));
+                                                setExpandedStudent(prev => ({ ...prev, code_content: expandedCode }));
+                                                setIsExpandedEditing(false);
+                                            } catch (error) {
+                                                console.error('Failed to save:', error);
+                                            } finally {
+                                                setIsExpandedSaving(false);
+                                            }
+                                        }}
+                                        disabled={isExpandedSaving}
+                                        className="btn bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-50"
+                                    >
+                                        {isExpandedSaving ? (
+                                            <>
+                                                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                                </svg>
+                                                Saving...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                Save
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+
+                                {/* Close Button */}
+                                <button
+                                    onClick={() => {
+                                        setExpandedStudent(null);
+                                        setExpandedCode('');
+                                        setExpandedOutput(null);
+                                        setIsExpandedEditing(false);
+                                    }}
+                                    className="p-2 text-gray-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         {/* Modal Body - Split View */}
                         <div className="flex-1 flex flex-row overflow-hidden">
                             {/* Code Editor Side */}
                             <div className="flex-1 flex flex-col border-r border-dark-600">
-                                <div className="px-3 py-2 bg-dark-900 border-b border-dark-700 text-xs text-gray-400 flex items-center gap-2">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                                    </svg>
-                                    Code ({expandedStudent.language || 'python'})
+                                <div className="px-3 py-2 bg-dark-900 border-b border-dark-700 text-xs text-gray-400 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                        </svg>
+                                        Code ({expandedStudent.language || 'python'})
+                                    </div>
+                                    {isExpandedEditing && (
+                                        <span className="text-purple-400 flex items-center gap-1">
+                                            <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                                            Editing Mode
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="flex-1">
                                     <Editor
                                         height="100%"
                                         language={expandedStudent.language || 'python'}
-                                        value={expandedStudent.code_content || '// No code yet'}
+                                        value={isExpandedEditing ? expandedCode : (expandedStudent.code_content || '// No code yet')}
+                                        onChange={isExpandedEditing ? (value) => setExpandedCode(value) : undefined}
                                         theme="vs-dark"
                                         options={{
-                                            readOnly: true,
-                                            minimap: { enabled: false },
+                                            readOnly: !isExpandedEditing,
+                                            minimap: { enabled: true },
                                             scrollBeyondLastLine: false,
                                             fontSize: 14,
                                             lineNumbers: 'on',
@@ -417,25 +542,19 @@ export default function TeacherDashboard() {
                                     Console Output
                                 </div>
                                 <div className="flex-1 overflow-y-auto p-4 font-mono text-sm">
-                                    {expandedStudent.recent_logs?.[0] ? (
+                                    {expandedOutput ? (
+                                        <pre className={`whitespace-pre-wrap break-words ${expandedOutput.success === false ? 'text-red-400' : 'text-green-400'}`}>
+                                            {expandedOutput.message || 'No output'}
+                                        </pre>
+                                    ) : expandedStudent.recent_logs?.[0] ? (
                                         <pre className={`whitespace-pre-wrap break-words ${expandedStudent.recent_logs[0].log_type === 'error' ? 'text-red-400' : 'text-green-400'}`}>
                                             {expandedStudent.recent_logs[0].message || 'No output'}
                                         </pre>
                                     ) : (
-                                        <span className="text-gray-500 italic">No output yet</span>
+                                        <span className="text-gray-500 italic">No output yet. Click "Run" to execute the code.</span>
                                     )}
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Modal Footer */}
-                        <div className="p-4 border-t border-dark-600 flex justify-end bg-dark-800">
-                            <button
-                                onClick={() => setExpandedStudent(null)}
-                                className="btn btn-secondary"
-                            >
-                                Close
-                            </button>
                         </div>
                     </div>
                 </div>
