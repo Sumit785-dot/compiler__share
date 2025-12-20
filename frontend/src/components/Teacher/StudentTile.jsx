@@ -146,6 +146,23 @@ function StudentTile({ student, isSelected, onSelect, sessionCode }) {
                             )}
                         </button>
 
+                        {/* Terminal Toggle Button */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowExpandedConsole(true);
+                            }}
+                            className="text-xs text-gray-400 hover:text-white flex items-center gap-1"
+                            title="Open Full Console"
+                        >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+                            </svg>
+                            Terminal
+                        </button>
+
+                        <div className="w-px h-3 bg-dark-700 mx-1" />
+
                         {/* Edit/Done Button */}
                         {!isEditing ? (
                             <button
