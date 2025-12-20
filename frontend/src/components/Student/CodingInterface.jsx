@@ -378,6 +378,63 @@ export default function CodingInterface() {
         };
     }, [sessionCode]);
 
+    // Proctoring: Detect split-screen / window resize
+    useEffect(() => {
+        if (!sessionCode) return;
+
+        let lastReportedState = null; // Track last reported state to avoid duplicate reports
+
+        const checkSplitScreen = async () => {
+            // Get screen and window dimensions
+            const screenWidth = window.screen.width;
+            const windowWidth = window.innerWidth;
+
+            // Calculate percentage of screen width being used
+            const widthPercentage = (windowWidth / screenWidth) * 100;
+
+            // If window is less than 80% of screen width, likely split-screen
+            const isSplitScreen = widthPercentage < 80;
+
+            // Only report if state changed (to avoid spamming)
+            if (isSplitScreen && lastReportedState !== 'split_screen') {
+                try {
+                    await codingAPI.reportActivity(sessionCode, 'split_screen');
+                    console.log('Reported: Split Screen Detected', `(${widthPercentage.toFixed(1)}% of screen)`);
+                    lastReportedState = 'split_screen';
+                } catch (e) {
+                    console.error('Failed to report split screen', e);
+                }
+            } else if (!isSplitScreen && lastReportedState === 'split_screen') {
+                // User returned to full screen
+                try {
+                    await codingAPI.reportActivity(sessionCode, 'fullscreen_restored');
+                    console.log('Reported: Full Screen Restored');
+                    lastReportedState = null;
+                } catch (e) {
+                    console.error('Failed to report fullscreen restore', e);
+                }
+            }
+        };
+
+        // Check on mount
+        checkSplitScreen();
+
+        // Check on window resize
+        const handleResize = () => {
+            checkSplitScreen();
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        // Also check periodically (every 5 seconds) in case user manually resizes
+        const interval = setInterval(checkSplitScreen, 5000);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            clearInterval(interval);
+        };
+    }, [sessionCode]);
+
     // Create new GitHub repo
     const createNewRepo = async () => {
         if (!newRepoName.trim()) return;

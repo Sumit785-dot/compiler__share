@@ -157,7 +157,9 @@ export default function TeacherDashboard() {
                         return { ...s, last_active: data.timestamp, activity_alert: 'Tab Hidden' };
                     } else if (data.activity_type === 'window_blur') {
                         return { ...s, last_active: data.timestamp, activity_alert: 'Window Blur' };
-                    } else if (data.activity_type === 'tab_visible') {
+                    } else if (data.activity_type === 'split_screen') {
+                        return { ...s, last_active: data.timestamp, activity_alert: 'Split Screen' };
+                    } else if (data.activity_type === 'tab_visible' || data.activity_type === 'fullscreen_restored') {
                         return { ...s, last_active: data.timestamp, activity_alert: null };
                     }
                     return { ...s, last_active: data.timestamp };
