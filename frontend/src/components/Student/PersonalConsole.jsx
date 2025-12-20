@@ -288,7 +288,7 @@ export default function PersonalConsole() {
                     {githubConnected ? (
                         <button
                             onClick={openPushModal}
-                            className="btn bg-gray-800 text-white hover:bg-gray-700 border border-gray-600"
+                            className="btn github-btn bg-gray-800 text-white hover:bg-gray-700 border border-gray-600"
                             title={`Push to GitHub (@${githubUsername})`}
                         >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -299,7 +299,7 @@ export default function PersonalConsole() {
                     ) : (
                         <button
                             onClick={connectGitHub}
-                            className="btn bg-gray-800 text-white hover:bg-gray-700 border border-gray-600"
+                            className="btn github-btn bg-gray-800 text-white hover:bg-gray-700 border border-gray-600"
                             title="Connect GitHub account"
                         >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
