@@ -199,6 +199,8 @@ export function WebSocketProvider({ children }) {
             send('request_control', { student_id: studentId }),
         releaseControl: (studentId) =>
             send('release_control', { student_id: studentId }),
+        sendStudentAlert: (message) =>
+            send('student_notification', { message }),
     };
 
     return (

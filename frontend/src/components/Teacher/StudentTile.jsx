@@ -221,7 +221,7 @@ function StudentTile({ student, isSelected, onSelect, sessionCode }) {
 
             {/* Console Output Preview - Clickable to expand */}
             <div
-                className="rounded-lg bg-dark-900 border border-dark-700 p-3 cursor-pointer hover:border-blue-500/50 transition-colors"
+                className="group rounded-lg bg-dark-900 border border-dark-700 p-3 cursor-pointer hover:border-blue-500/50 transition-colors"
                 onClick={(e) => {
                     e.stopPropagation();
                     setShowExpandedConsole(true);
@@ -235,9 +235,12 @@ function StudentTile({ student, isSelected, onSelect, sessionCode }) {
                         </svg>
                         Console
                     </div>
-                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                    </svg>
+                    <div className="flex items-center gap-2" title="Maximize Terminal">
+                        <span className="text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Maximize</span>
+                        <svg className="w-4 h-4 text-gray-500 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        </svg>
+                    </div>
                 </div>
                 <div className="font-mono text-sm max-h-24 overflow-y-auto">
                     {recentOutput ? (

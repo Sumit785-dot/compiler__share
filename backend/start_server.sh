@@ -16,7 +16,7 @@ export GITHUB_ADMIN_USERNAME="Sumit785-dot"
 # 2. Generate new token
 # 3. Select 'repo' scope (Full control of private repositories)
 # 4. Copy the token and paste it below
-export GITHUB_ADMIN_TOKEN="REPLACE_THIS_WITH_YOUR_TOKEN"
+export GITHUB_ADMIN_TOKEN="YOUR_GITHUB_TOKEN_HERE"
 
 # ------------------------------------------
 # 2. START SERVER

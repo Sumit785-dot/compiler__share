@@ -134,6 +134,9 @@ export const codingAPI = {
     heartbeat: (sessionCode) =>
         api.post('/coding/heartbeat/', { session_code: sessionCode }),
 
+    sendNotification: (message, sessionCode) =>
+        api.post('/coding/notify/', { message, session_code: sessionCode }),
+
     getLanguages: () =>
         api.get('/coding/languages/'),
 };

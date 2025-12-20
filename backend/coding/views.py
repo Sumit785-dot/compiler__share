@@ -68,14 +68,14 @@ class ExecuteCodeView(APIView):
                     message=message
                 )
             
-            # Create error notification for teacher if execution failed
-            if not result.get('success') and result.get('error'):
-                ErrorNotification.objects.create(
-                    session=session,
-                    student=request.user,
-                    error_message=result.get('error'),
-                    is_read=False
-                )
+            # Error notification creation disabled - manual only
+            # if not result.get('success') and result.get('error'):
+            #     ErrorNotification.objects.create(
+            #         session=session,
+            #         student=request.user,
+            #         error_message=result.get('error'),
+            #         is_read=False
+            #     )
         
         return Response(result)
 
@@ -254,6 +254,35 @@ class SupportedLanguagesView(APIView):
                 {'id': 'java', 'name': 'Java', 'extension': '.java'},
             ]
         })
+
+
+class SendNotificationView(APIView):
+    """Send manual notification to teacher."""
+    
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        session_code = request.data.get('session_code', '')
+        message = request.data.get('message', 'Help requested')
+        
+        if not session_code:
+            return Response(
+                {'error': 'Session code is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        session = get_object_or_404(CodingSession, session_code=session_code)
+        
+        # Create notification
+        from sessions.models import ErrorNotification
+        ErrorNotification.objects.create(
+            session=session,
+            student=request.user,
+            error_message=message,
+            is_read=False
+        )
+        
+        return Response({'success': True, 'message': 'Notification sent'})
 
 
 

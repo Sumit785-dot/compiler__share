@@ -123,6 +123,7 @@ class CodingConsumer(AsyncWebsocketConsumer):
                 'release_control': self.handle_release_control,
                 'heartbeat': self.handle_heartbeat,
                 'console_clear': self.handle_console_clear,
+                'student_notification': self.handle_student_notification,
             }
             
             handler = handlers.get(message_type)
@@ -242,9 +243,33 @@ class CodingConsumer(AsyncWebsocketConsumer):
             }
         )
         
-        # If error, create error notification
-        if not result['success']:
-            await self.create_error_notification(result.get('error', ''))
+        # If error, do NOT create error notification automatically
+        # if not result['success']:
+        #     await self.create_error_notification(result.get('error', ''))
+
+    async def handle_student_notification(self, data):
+        """Handle manual notification from student."""
+        user_data = await self.get_user_data()
+        if not user_data:
+            return
+
+        message = data.get('message', 'Help requested')
+        
+        # Create notification in DB
+        await self.create_error_notification(message)
+        
+        # Broadcast to teachers
+        await self.channel_layer.group_send(
+            self.session_group_name,
+            {
+                'type': 'student_alert',
+                'student_id': user_data['id'],
+                'username': user_data['username'],
+                'full_name': user_data['full_name'],
+                'message': message,
+                'timestamp': datetime.now().isoformat()
+            }
+        )
     
     async def handle_request_control(self, data):
         """Handle teacher requesting control of student's editor."""
@@ -352,6 +377,12 @@ class CodingConsumer(AsyncWebsocketConsumer):
     
     async def student_activity(self, event):
         """Send student activity update to teachers."""
+        user_data = await self.get_user_data()
+        if user_data and user_data['role'] == 'teacher':
+            await self.safe_send(event)
+
+    async def student_alert(self, event):
+        """Send student alert to teachers."""
         user_data = await self.get_user_data()
         if user_data and user_data['role'] == 'teacher':
             await self.safe_send(event)
