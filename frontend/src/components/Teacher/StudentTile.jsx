@@ -235,12 +235,19 @@ function StudentTile({ student, isSelected, onSelect, sessionCode }) {
                         </svg>
                         Console
                     </div>
-                    <div className="flex items-center gap-2" title="Maximize Terminal">
-                        <span className="text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Maximize</span>
-                        <svg className="w-4 h-4 text-gray-500 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setShowExpandedConsole(true);
+                        }}
+                        className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors px-2 py-1 rounded hover:bg-white/5"
+                        title="Maximize Terminal"
+                    >
+                        <span>Maximize</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                         </svg>
-                    </div>
+                    </button>
                 </div>
                 <div className="font-mono text-sm max-h-24 overflow-y-auto">
                     {recentOutput ? (
