@@ -61,11 +61,11 @@ function App() {
                     />
                     <Route
                         path="/join"
-                        element={user?.role === 'student' ? <JoinSession /> : <Navigate to="/login" />}
+                        element={user ? <JoinSession /> : <Navigate to="/login" />}
                     />
                     <Route
                         path="/code/:sessionCode?"
-                        element={user?.role === 'student' ? <StudentInterface /> : <Navigate to="/login" />}
+                        element={user ? <StudentInterface /> : <Navigate to="/login" />}
                     />
                     <Route
                         path="/personal-console"

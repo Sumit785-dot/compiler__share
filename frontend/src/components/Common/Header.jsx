@@ -60,6 +60,12 @@ export default function Header() {
                                     >
                                         Personal Console
                                     </button>
+                                    <button
+                                        onClick={() => navigate('/join')}
+                                        className="text-gray-300 hover:text-blue-400 transition-colors bg-transparent border-none cursor-pointer"
+                                    >
+                                        Join Session
+                                    </button>
                                 </>
                             )}
                             {user?.role === 'student' && (
