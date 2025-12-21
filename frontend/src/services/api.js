@@ -113,6 +113,9 @@ export const sessionsAPI = {
 
     markErrorRead: (notificationId) =>
         api.post(`/sessions/errors/${notificationId}/read/`),
+
+    getStudentStats: () =>
+        api.get('/sessions/student/stats/'),
 };
 
 // Coding API

@@ -298,3 +298,26 @@ class ReportActivityView(APIView):
         )
         
         return Response({'status': 'reported'})
+
+
+class StudentStatsView(APIView):
+    """Get statistics for student dashboard."""
+    
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        active_sessions = CodingSession.objects.filter(is_active=True).count()
+        attended_sessions = SessionParticipant.objects.filter(student=request.user).count()
+        
+        # Calculate missed sessions (Total sessions created - Attended)
+        # Note: In a real world scenario, might want to filter by sessions *available* to the student (e.g. by group/class)
+        # For now, assuming all sessions are potential sessions
+        total_sessions = CodingSession.objects.count()
+        missed_sessions = max(0, total_sessions - attended_sessions)
+        
+        return Response({
+            'active_sessions': active_sessions,
+            'attended_sessions': attended_sessions,
+            'total_sessions': total_sessions,
+            'missed_sessions': missed_sessions
+        })

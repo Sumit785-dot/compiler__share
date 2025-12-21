@@ -8,6 +8,7 @@ import PersonalConsole from './components/Student/PersonalConsole'
 import SessionManager from './components/Teacher/SessionManager'
 import JoinSession from './components/Student/JoinSession'
 import Header from './components/Common/Header'
+import StudentDashboard from './components/Student/Dashboard'
 
 function App() {
     const { user, loading } = useAuth()
@@ -52,6 +53,10 @@ function App() {
 
                     {/* Student routes */}
                     <Route
+                        path="/student-dashboard"
+                        element={user?.role === 'student' ? <StudentDashboard /> : <Navigate to="/login" />}
+                    />
+                    <Route
                         path="/join"
                         element={user?.role === 'student' ? <JoinSession /> : <Navigate to="/login" />}
                     />
@@ -69,7 +74,7 @@ function App() {
                         path="/"
                         element={
                             user
-                                ? <Navigate to={user.role === 'teacher' ? '/dashboard' : '/join'} />
+                                ? <Navigate to={user.role === 'teacher' ? '/dashboard' : '/student-dashboard'} />
                                 : <Navigate to="/login" />
                         }
                     />

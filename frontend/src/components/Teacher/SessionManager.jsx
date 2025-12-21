@@ -1,8 +1,22 @@
 /**
- * Session Manager - Teacher's session management page
+ * Session Manager - Premium Teacher Dashboard
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    Plus,
+    Code2,
+    Users,
+    Terminal,
+    MoreVertical,
+    Trash2,
+    Copy,
+    ExternalLink,
+    Play,
+    Clock,
+    Search
+} from 'lucide-react';
 import { sessionsAPI } from '../../services/api';
 
 export default function SessionManager() {
@@ -11,6 +25,7 @@ export default function SessionManager() {
     const [showCreate, setShowCreate] = useState(false);
     const [newSession, setNewSession] = useState({ session_name: '', description: '', default_language: 'python' });
     const [creating, setCreating] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -55,191 +70,272 @@ export default function SessionManager() {
 
     const copySessionCode = (code) => {
         navigator.clipboard.writeText(code);
+        // Could add a toast notification here later
     };
 
-    return (
-        <div className="min-h-screen p-6">
-            <div className="max-w-6xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gradient">Session Manager</h1>
-                        <p className="text-gray-400 mt-1">Create and manage your coding sessions</p>
-                    </div>
-                    <button
-                        onClick={() => setShowCreate(true)}
-                        className="btn btn-primary"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        New Session
-                    </button>
-                </div>
+    const filteredSessions = sessions.filter(s =>
+        s.session_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.session_code.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-                {/* Create Session Modal */}
-                {showCreate && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                        <div className="card w-full max-w-md animate-fadeIn">
-                            <h2 className="text-xl font-bold mb-4">Create New Session</h2>
-                            <form onSubmit={createSession} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        Session Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={newSession.session_name}
-                                        onChange={(e) => setNewSession({ ...newSession, session_name: e.target.value })}
-                                        className="input"
-                                        placeholder="e.g., Python Basics - Week 1"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        Description (optional)
-                                    </label>
-                                    <textarea
-                                        value={newSession.description}
-                                        onChange={(e) => setNewSession({ ...newSession, description: e.target.value })}
-                                        className="input min-h-[80px]"
-                                        placeholder="Add a description..."
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                                        Default Language
-                                    </label>
-                                    <select
-                                        value={newSession.default_language}
-                                        onChange={(e) => setNewSession({ ...newSession, default_language: e.target.value })}
-                                        className="input"
-                                    >
-                                        <option value="python">Python</option>
-                                        <option value="javascript">JavaScript</option>
-                                        <option value="c">C</option>
-                                        <option value="cpp">C++</option>
-                                        <option value="java">Java</option>
-                                    </select>
-                                </div>
-                                <div className="flex gap-3 pt-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCreate(false)}
-                                        className="flex-1 btn btn-secondary"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={creating}
-                                        className="flex-1 btn btn-primary"
-                                    >
-                                        {creating ? 'Creating...' : 'Create Session'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+    const activeSessionsCount = sessions.filter(s => s.is_active).length;
+    const totalStudents = sessions.reduce((acc, curr) => acc + (curr.participant_count || 0), 0);
+
+    return (
+        <div className="min-h-screen bg-[#0f1117] text-white p-6 font-sans">
+            <div className="max-w-7xl mx-auto">
+                {/* Header Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12"
+                >
+                    <div>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2 font-display">
+                            Command Center
+                        </h1>
+                        <p className="text-gray-400 font-medium">Manage your active coding classrooms</p>
                     </div>
-                )}
+
+                    <div className="flex items-center gap-4">
+                        <div className="hidden md:flex items-center gap-6 px-6 py-3 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
+                            <div className="text-center">
+                                <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Active</div>
+                                <div className="text-xl font-bold text-green-400">{activeSessionsCount}</div>
+                            </div>
+                            <div className="w-px h-8 bg-white/10" />
+                            <div className="text-center">
+                                <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Students</div>
+                                <div className="text-xl font-bold text-blue-400">{totalStudents}</div>
+                            </div>
+                        </div>
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setShowCreate(true)}
+                            className="btn btn-primary px-6 py-3 rounded-xl shadow-lg shadow-blue-500/20 flex items-center gap-2"
+                        >
+                            <Plus className="w-5 h-5" />
+                            <span className="font-semibold">New Session</span>
+                        </motion.button>
+                    </div>
+                </motion.div>
+
+                {/* Search Bar */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className="relative mb-8 max-w-md"
+                >
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+                    <input
+                        type="text"
+                        placeholder="Search sessions..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-gray-600"
+                    />
+                </motion.div>
 
                 {/* Sessions Grid */}
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3].map((i) => (
-                            <div key={i} className="card animate-pulse">
-                                <div className="h-6 bg-dark-700 rounded w-3/4 mb-4" />
-                                <div className="h-4 bg-dark-700 rounded w-1/2 mb-6" />
-                                <div className="h-10 bg-dark-700 rounded" />
-                            </div>
+                            <div key={i} className="h-64 bg-white/5 rounded-3xl animate-pulse" />
                         ))}
                     </div>
-                ) : sessions.length === 0 ? (
-                    <div className="text-center py-20">
-                        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-dark-800 flex items-center justify-center">
-                            <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                            </svg>
+                ) : filteredSessions.length === 0 ? (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10"
+                    >
+                        <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-blue-500/10 flex items-center justify-center">
+                            <Code2 className="w-12 h-12 text-blue-400" />
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-300 mb-2">No sessions yet</h3>
-                        <p className="text-gray-500 mb-6">Create your first coding session to get started</p>
+                        <h3 className="text-2xl font-bold text-white mb-2">No active sessions</h3>
+                        <p className="text-gray-400 mb-8 max-w-sm mx-auto">
+                            Start a new coding environment to begin monitoring students in real-time.
+                        </p>
                         <button onClick={() => setShowCreate(true)} className="btn btn-primary">
-                            Create Session
+                            Create First Session
                         </button>
-                    </div>
+                    </motion.div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {sessions.map((session) => (
-                            <div key={session.id} className="card hover:border-blue-500/30 transition-all">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div>
-                                        <h3 className="font-semibold text-lg text-white">{session.session_name}</h3>
-                                        {session.description && (
-                                            <p className="text-gray-400 text-sm mt-1 line-clamp-2">{session.description}</p>
-                                        )}
+                    <motion.div
+                        layout
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                    >
+                        <AnimatePresence>
+                            {filteredSessions.map((session, index) => (
+                                <motion.div
+                                    layout
+                                    key={session.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                                    className="group relative bg-[#161b22] hover:bg-[#1a202a] rounded-3xl p-6 border border-white/5 hover:border-blue-500/30 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-blue-500/10"
+                                >
+                                    {/* Status Badge */}
+                                    <div className="flex justify-between items-start mb-6">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${session.is_active
+                                                ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                                                : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
+                                            }`}>
+                                            <span className={`w-2 h-2 rounded-full ${session.is_active ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`} />
+                                            {session.is_active ? 'Live' : 'Archived'}
+                                        </span>
+
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {session.is_active && (
+                                                <button
+                                                    onClick={() => endSession(session.session_code)}
+                                                    className="p-2 hover:bg-red-500/20 rounded-lg text-gray-400 hover:text-red-400 transition-colors"
+                                                    title="End Session"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${session.is_active ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'
-                                        }`}>
-                                        {session.is_active ? 'Active' : 'Ended'}
-                                    </span>
-                                </div>
 
-                                {/* Session Code */}
-                                <div className="flex items-center gap-2 p-3 rounded-lg bg-dark-800 mb-4">
-                                    <span className="text-gray-400 text-sm">Code:</span>
-                                    <span className="font-mono font-bold text-xl text-white tracking-wider">
-                                        {session.session_code}
-                                    </span>
-                                    <button
-                                        onClick={() => copySessionCode(session.session_code)}
-                                        className="ml-auto p-1.5 hover:bg-dark-700 rounded text-gray-400 hover:text-white transition-colors"
-                                        title="Copy code"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                    {/* Content */}
+                                    <div className="mb-6">
+                                        <h3 className="font-bold text-xl text-white mb-2 line-clamp-1">{session.session_name}</h3>
+                                        <p className="text-gray-400 text-sm line-clamp-2 h-10">
+                                            {session.description || 'No description provided.'}
+                                        </p>
+                                    </div>
 
-                                {/* Stats */}
-                                <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
-                                    <span className="flex items-center gap-1">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        {session.participant_count || 0} students
-                                    </span>
-                                    <span className="capitalize">{session.default_language}</span>
-                                </div>
+                                    {/* Code Snippet Box */}
+                                    <div className="bg-black/30 rounded-xl p-4 mb-6 relative group/code border border-white/5">
+                                        <div className="text-xs text-gray-500 uppercase font-bold mb-1">Session Code</div>
+                                        <div className="font-mono text-2xl font-bold text-blue-400 tracking-wider">
+                                            {session.session_code}
+                                        </div>
+                                        <button
+                                            onClick={() => copySessionCode(session.session_code)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
+                                        >
+                                            <Copy className="w-4 h-4" />
+                                        </button>
+                                    </div>
 
-                                {/* Actions */}
-                                <div className="flex gap-2">
-                                    {session.is_active ? (
-                                        <>
+                                    {/* Footer Stats & Action */}
+                                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                                        <div className="flex items-center gap-4 text-sm text-gray-500 font-medium">
+                                            <div className="flex items-center gap-1.5" title="Students">
+                                                <Users className="w-4 h-4" />
+                                                {session.participant_count || 0}
+                                            </div>
+                                            <div className="flex items-center gap-1.5 capitalize" title="Language">
+                                                <Terminal className="w-4 h-4" />
+                                                {session.default_language}
+                                            </div>
+                                        </div>
+
+                                        {session.is_active ? (
                                             <button
                                                 onClick={() => navigate(`/session/${session.session_code}`)}
-                                                className="flex-1 btn btn-primary"
+                                                className="flex items-center gap-2 text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors"
                                             >
-                                                Open Dashboard
+                                                Monitor <ExternalLink className="w-4 h-4" />
                                             </button>
-                                            <button
-                                                onClick={() => endSession(session.session_code)}
-                                                className="btn btn-secondary text-red-400 hover:text-red-300"
-                                            >
-                                                End
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <button disabled className="flex-1 btn btn-secondary opacity-50 cursor-not-allowed">
-                                            Session Ended
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                                        ) : (
+                                            <span className="text-xs font-semibold text-gray-600 uppercase">Closed</span>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    </motion.div>
                 )}
+
+                {/* Create Session Modal */}
+                <AnimatePresence>
+                    {showCreate && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                                onClick={() => setShowCreate(false)}
+                            />
+
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                className="relative bg-[#1e232e] w-full max-w-lg rounded-3xl border border-white/10 shadow-2xl p-8 z-10"
+                            >
+                                <h2 className="text-2xl font-bold mb-6">Create New Environment</h2>
+                                <form onSubmit={createSession} className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Session Name</label>
+                                        <input
+                                            type="text"
+                                            value={newSession.session_name}
+                                            onChange={(e) => setNewSession({ ...newSession, session_name: e.target.value })}
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none"
+                                            placeholder="e.g. Algorithms 101"
+                                            required
+                                            autoFocus
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Description</label>
+                                        <textarea
+                                            value={newSession.description}
+                                            onChange={(e) => setNewSession({ ...newSession, description: e.target.value })}
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none min-h-[100px]"
+                                            placeholder="Briefly describe the session goals..."
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Language Stack</label>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {['python', 'javascript', 'java', 'cpp', 'c'].map((lang) => (
+                                                <button
+                                                    key={lang}
+                                                    type="button"
+                                                    onClick={() => setNewSession({ ...newSession, default_language: lang })}
+                                                    className={`px-4 py-3 rounded-xl border font-medium capitalize transition-all ${newSession.default_language === lang
+                                                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                                                            : 'bg-black/20 border-white/5 text-gray-400 hover:bg-white/5'
+                                                        }`}
+                                                >
+                                                    {lang === 'cpp' ? 'C++' : lang}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4 pt-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCreate(false)}
+                                            className="flex-1 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-semibold transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={creating}
+                                            className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold shadow-lg shadow-blue-500/25 transition-all"
+                                        >
+                                            {creating ? 'initializing...' : 'Launch Session'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

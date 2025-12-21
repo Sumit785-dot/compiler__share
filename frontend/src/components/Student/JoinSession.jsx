@@ -1,7 +1,7 @@
 /**
  * Join Session - Student enters session code
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sessionsAPI } from '../../services/api';
 
@@ -9,7 +9,21 @@ export default function JoinSession() {
     const [sessionCode, setSessionCode] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [stats, setStats] = useState({ active_sessions: 0, attended_sessions: 0 });
     const navigate = useNavigate();
+
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    const fetchStats = async () => {
+        try {
+            const response = await sessionsAPI.getStudentStats();
+            setStats(response.data);
+        } catch (error) {
+            console.error('Failed to load stats:', error);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,11 +45,33 @@ export default function JoinSession() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 py-12">
+        <div className="min-h-screen flex items-center justify-center px-4 py-12 flex-col">
             {/* Background effects */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-1/4 -left-20 w-96 h-96 bg-green-500/10 rounded-full blur-3xl" />
                 <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+            </div>
+
+            {/* Stats Header */}
+            <div className="absolute top-8 right-8 flex gap-6 text-sm font-medium z-10 hidden md:flex">
+                <div className="flex flex-col items-end">
+                    <span className="text-gray-400">Live Activty</span>
+                    <span className="text-green-400 flex items-center gap-1.5">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                        {stats.active_sessions} Sessions Active
+                    </span>
+                </div>
+                <div className="w-px bg-white/10 h-10"></div>
+                <div className="flex flex-col items-end">
+                    <span className="text-gray-400">Your Journey</span>
+                    <span className="text-blue-400 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                        {stats.attended_sessions} Classes Attended
+                    </span>
+                </div>
             </div>
 
             <div className="relative w-full max-w-md">

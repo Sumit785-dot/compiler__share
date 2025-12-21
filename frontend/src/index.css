@@ -13,22 +13,24 @@
   box-sizing: border-box;
 }
 
-/* Dark Theme (default) */
+/* Dark Theme (Blue Mode) */
 body {
   font-family: var(--font-sans);
-  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  /* Deep Blue Gradient */
+  background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #172554 100%);
   min-height: 100vh;
-  color: #e2e8f0;
+  color: #eff6ff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Light Theme */
+/* Light Theme (White Mode) */
 .light body,
 html.light body {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
-  color: #1e293b;
+  /* Clean White Gradient */
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+  color: #0f172a;
 }
 
 /* Light theme scrollbar */
@@ -396,6 +398,7 @@ html.light body {
 .light .fixed.inset-0.pointer-events-none .bg-purple-500\/5 {
   opacity: 0.3;
 }
+
 /* Light theme - GitHub button (keep dark for visibility) */
 .light .github-btn {
   background-color: #24292e !important;
