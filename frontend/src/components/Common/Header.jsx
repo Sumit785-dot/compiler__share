@@ -48,34 +48,34 @@ export default function Header() {
                         <nav className="hidden md:flex items-center gap-4">
                             {user?.role === 'teacher' && (
                                 <>
-                                    <Link
-                                        to="/dashboard"
-                                        className="text-gray-300 hover:text-white transition-colors"
+                                    <button
+                                        onClick={() => navigate('/dashboard')}
+                                        className="text-gray-300 hover:text-white transition-colors bg-transparent border-none cursor-pointer"
                                     >
                                         Dashboard
-                                    </Link>
-                                    <Link
-                                        to="/personal-console"
-                                        className="text-gray-300 hover:text-green-400 transition-colors"
+                                    </button>
+                                    <button
+                                        onClick={() => navigate('/personal-console')}
+                                        className="text-gray-300 hover:text-green-400 transition-colors bg-transparent border-none cursor-pointer"
                                     >
                                         Personal Console
-                                    </Link>
+                                    </button>
                                 </>
                             )}
                             {user?.role === 'student' && (
                                 <>
-                                    <Link
-                                        to="/join"
-                                        className="text-gray-300 hover:text-white transition-colors"
+                                    <button
+                                        onClick={() => navigate('/join')}
+                                        className="text-gray-300 hover:text-white transition-colors bg-transparent border-none cursor-pointer"
                                     >
                                         Join Session
-                                    </Link>
-                                    <Link
-                                        to="/personal-console"
-                                        className="text-gray-300 hover:text-green-400 transition-colors"
+                                    </button>
+                                    <button
+                                        onClick={() => navigate('/personal-console')}
+                                        className="text-gray-300 hover:text-green-400 transition-colors bg-transparent border-none cursor-pointer"
                                     >
                                         Personal Console
-                                    </Link>
+                                    </button>
                                 </>
                             )}
                         </nav>
