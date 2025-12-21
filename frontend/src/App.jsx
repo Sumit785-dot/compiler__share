@@ -16,11 +16,14 @@ function App() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-pulse flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-4">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-spin"
                         style={{ animationDuration: '1.5s' }}>
                     </div>
                     <p className="text-gray-400 text-lg">Loading CodeMonitor...</p>
+                    <p className="text-gray-500 text-sm text-center max-w-xs">
+                        First load may take 30-60 seconds while server wakes up
+                    </p>
                 </div>
             </div>
         )
