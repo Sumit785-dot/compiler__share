@@ -26,11 +26,11 @@ body {
 }
 
 /* Light Theme (White Mode) */
-.light body,
-html.light body {
+html.light body,
+.light body {
   /* Clean White Gradient */
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
-  color: #0f172a;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%) !important;
+  color: #0f172a !important;
 }
 
 /* Light theme scrollbar */
@@ -258,15 +258,15 @@ html.light body {
 /* Light theme backgrounds */
 .light .bg-dark-800,
 .light .bg-dark-900 {
-  background-color: #f8fafc;
+  background-color: #ffffff !important;
 }
 
 .light .bg-dark-700 {
-  background-color: #f1f5f9;
+  background-color: #f8fafc !important;
 }
 
 .light .bg-dark-600 {
-  background-color: #e2e8f0;
+  background-color: #f1f5f9 !important;
 }
 
 /* Light theme borders */
@@ -408,4 +408,44 @@ html.light body {
 
 .light .github-btn:hover {
   background-color: #2f363d !important;
+}
+
+/* Light theme - Teacher Dashboard Modal */
+.light .bg-black\/95 {
+  background-color: rgba(241, 245, 249, 0.98);
+}
+
+/* Light theme - Code editor and console containers in Teacher Dashboard */
+.light .bg-dark-900.flex.flex-col,
+.light .flex-col.bg-dark-900 {
+  background-color: #ffffff;
+}
+
+/* Light theme - All dark backgrounds should be light */
+.light [class*="bg-dark-"] {
+  background-color: #ffffff !important;
+}
+
+.light .border-dark-600,
+.light .border-dark-700,
+.light [class*="border-dark-"] {
+  border-color: #e2e8f0;
+}
+
+/* Light theme - Monaco editor wrapper in tiles */
+.light .rounded-lg.overflow-hidden.bg-dark-900 {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+/* Light theme - Console output area */
+.light .rounded-lg.bg-dark-900.border {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+/* Light theme - Modal header and body */
+.light .bg-dark-800.border.border-dark-600 {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
 }

@@ -18,8 +18,10 @@ import {
     Search
 } from 'lucide-react';
 import { sessionsAPI } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function SessionManager() {
+    const { isDark } = useTheme();
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreate, setShowCreate] = useState(false);
@@ -82,7 +84,7 @@ export default function SessionManager() {
     const totalStudents = sessions.reduce((acc, curr) => acc + (curr.participant_count || 0), 0);
 
     return (
-        <div className="min-h-screen bg-[#0f1117] text-white p-6 font-sans">
+        <div className={`min-h-screen p-6 font-sans ${isDark ? 'bg-[#0f1117] text-white' : 'bg-gray-50 text-gray-900'}`}>
             <div className="max-w-7xl mx-auto">
                 {/* Header Section */}
                 <motion.div
@@ -94,11 +96,11 @@ export default function SessionManager() {
                         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2 font-display">
                             Command Center
                         </h1>
-                        <p className="text-gray-400 font-medium">Manage your active coding classrooms</p>
+                        <p className={`font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Manage your active coding classrooms</p>
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="hidden md:flex items-center gap-6 px-6 py-3 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
+                        <div className={`hidden md:flex items-center gap-6 px-6 py-3 rounded-2xl border backdrop-blur-sm ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200 shadow-sm'}`}>
                             <div className="text-center">
                                 <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Active</div>
                                 <div className="text-xl font-bold text-green-400">{activeSessionsCount}</div>
@@ -134,7 +136,7 @@ export default function SessionManager() {
                         placeholder="Search sessions..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-gray-600"
+                        className={`w-full rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${isDark ? 'bg-white/5 border border-white/10 text-gray-300 placeholder-gray-600' : 'bg-white border border-gray-200 text-gray-900 placeholder-gray-400 shadow-sm'}`}
                     />
                 </motion.div>
 
@@ -142,20 +144,20 @@ export default function SessionManager() {
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3].map((i) => (
-                            <div key={i} className="h-64 bg-white/5 rounded-3xl animate-pulse" />
+                            <div key={i} className={`h-64 rounded-3xl animate-pulse ${isDark ? 'bg-white/5' : 'bg-gray-200'}`} />
                         ))}
                     </div>
                 ) : filteredSessions.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10"
+                        className={`text-center py-20 rounded-3xl border border-dashed ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-300 shadow-sm'}`}
                     >
-                        <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-blue-500/10 flex items-center justify-center">
+                        <div className={`w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center ${isDark ? 'bg-blue-500/10' : 'bg-blue-100'}`}>
                             <Code2 className="w-12 h-12 text-blue-400" />
                         </div>
-                        <h3 className="text-2xl font-bold text-white mb-2">No active sessions</h3>
-                        <p className="text-gray-400 mb-8 max-w-sm mx-auto">
+                        <h3 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>No active sessions</h3>
+                        <p className={`mb-8 max-w-sm mx-auto ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                             Start a new coding environment to begin monitoring students in real-time.
                         </p>
                         <button onClick={() => setShowCreate(true)} className="btn btn-primary">
@@ -176,13 +178,13 @@ export default function SessionManager() {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.9 }}
                                     transition={{ duration: 0.3, delay: index * 0.05 }}
-                                    className="group relative bg-[#161b22] hover:bg-[#1a202a] rounded-3xl p-6 border border-white/5 hover:border-blue-500/30 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-blue-500/10"
+                                    className={`group relative rounded-3xl p-6 border transition-all duration-300 ${isDark ? 'bg-[#161b22] hover:bg-[#1a202a] border-white/5 hover:border-blue-500/30 shadow-xl hover:shadow-2xl hover:shadow-blue-500/10' : 'bg-white hover:bg-gray-50 border-gray-200 hover:border-blue-300 shadow-md hover:shadow-lg'}`}
                                 >
                                     {/* Status Badge */}
                                     <div className="flex justify-between items-start mb-6">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${session.is_active
-                                                ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                                                : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
+                                            ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                                            : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
                                             }`}>
                                             <span className={`w-2 h-2 rounded-full ${session.is_active ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`} />
                                             {session.is_active ? 'Live' : 'Archived'}
@@ -203,14 +205,14 @@ export default function SessionManager() {
 
                                     {/* Content */}
                                     <div className="mb-6">
-                                        <h3 className="font-bold text-xl text-white mb-2 line-clamp-1">{session.session_name}</h3>
-                                        <p className="text-gray-400 text-sm line-clamp-2 h-10">
+                                        <h3 className={`font-bold text-xl mb-2 line-clamp-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>{session.session_name}</h3>
+                                        <p className={`text-sm line-clamp-2 h-10 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                                             {session.description || 'No description provided.'}
                                         </p>
                                     </div>
 
                                     {/* Code Snippet Box */}
-                                    <div className="bg-black/30 rounded-xl p-4 mb-6 relative group/code border border-white/5">
+                                    <div className={`rounded-xl p-4 mb-6 relative group/code border ${isDark ? 'bg-black/30 border-white/5' : 'bg-gray-100 border-gray-200'}`}>
                                         <div className="text-xs text-gray-500 uppercase font-bold mb-1">Session Code</div>
                                         <div className="font-mono text-2xl font-bold text-blue-400 tracking-wider">
                                             {session.session_code}
@@ -224,7 +226,7 @@ export default function SessionManager() {
                                     </div>
 
                                     {/* Footer Stats & Action */}
-                                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                                    <div className={`flex items-center justify-between pt-4 border-t ${isDark ? 'border-white/5' : 'border-gray-200'}`}>
                                         <div className="flex items-center gap-4 text-sm text-gray-500 font-medium">
                                             <div className="flex items-center gap-1.5" title="Students">
                                                 <Users className="w-4 h-4" />
@@ -269,9 +271,9 @@ export default function SessionManager() {
                                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                className="relative bg-[#1e232e] w-full max-w-lg rounded-3xl border border-white/10 shadow-2xl p-8 z-10"
+                                className={`relative w-full max-w-lg rounded-3xl border shadow-2xl p-8 z-10 ${isDark ? 'bg-[#1e232e] border-white/10' : 'bg-white border-gray-200'}`}
                             >
-                                <h2 className="text-2xl font-bold mb-6">Create New Environment</h2>
+                                <h2 className={`text-2xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>Create New Environment</h2>
                                 <form onSubmit={createSession} className="space-y-6">
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Session Name</label>
@@ -279,7 +281,7 @@ export default function SessionManager() {
                                             type="text"
                                             value={newSession.session_name}
                                             onChange={(e) => setNewSession({ ...newSession, session_name: e.target.value })}
-                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none"
+                                            className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none ${isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
                                             placeholder="e.g. Algorithms 101"
                                             required
                                             autoFocus
@@ -291,7 +293,7 @@ export default function SessionManager() {
                                         <textarea
                                             value={newSession.description}
                                             onChange={(e) => setNewSession({ ...newSession, description: e.target.value })}
-                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none min-h-[100px]"
+                                            className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none min-h-[100px] ${isDark ? 'bg-black/20 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
                                             placeholder="Briefly describe the session goals..."
                                         />
                                     </div>
@@ -305,8 +307,8 @@ export default function SessionManager() {
                                                     type="button"
                                                     onClick={() => setNewSession({ ...newSession, default_language: lang })}
                                                     className={`px-4 py-3 rounded-xl border font-medium capitalize transition-all ${newSession.default_language === lang
-                                                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                                                            : 'bg-black/20 border-white/5 text-gray-400 hover:bg-white/5'
+                                                        ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                                                        : isDark ? 'bg-black/20 border-white/5 text-gray-400 hover:bg-white/5' : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'
                                                         }`}
                                                 >
                                                     {lang === 'cpp' ? 'C++' : lang}
@@ -319,7 +321,7 @@ export default function SessionManager() {
                                         <button
                                             type="button"
                                             onClick={() => setShowCreate(false)}
-                                            className="flex-1 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-semibold transition-colors"
+                                            className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-colors ${isDark ? 'bg-white/5 hover:bg-white/10 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
                                         >
                                             Cancel
                                         </button>

@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useWebSocket } from '../../context/WebSocketContext';
+import { useTheme } from '../../context/ThemeContext';
 import { sessionsAPI, codingAPI } from '../../services/api';
 import StudentTile from './StudentTile';
 import ErrorNotifications from './ErrorNotifications';
@@ -13,6 +14,7 @@ export default function TeacherDashboard() {
     const { sessionCode } = useParams();
     const navigate = useNavigate();
     const { connect, disconnect, isConnected, on, off } = useWebSocket();
+    const { isDark } = useTheme();
 
     const [session, setSession] = useState(null);
     const [students, setStudents] = useState([]);
@@ -526,7 +528,7 @@ export default function TeacherDashboard() {
                                         language={expandedStudent.language || 'python'}
                                         value={isExpandedEditing ? expandedCode : (expandedStudent.code_content || '// No code yet')}
                                         onChange={isExpandedEditing ? (value) => setExpandedCode(value) : undefined}
-                                        theme="vs-dark"
+                                        theme={isDark ? "vs-dark" : "light"}
                                         options={{
                                             readOnly: !isExpandedEditing,
                                             minimap: { enabled: true },

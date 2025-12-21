@@ -4,8 +4,10 @@
 import { useState, useEffect, memo } from 'react';
 import Editor from '@monaco-editor/react';
 import { codingAPI } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 
 function StudentTile({ student, isSelected, onSelect, onExpand, sessionCode }) {
+    const { isDark } = useTheme();
     const [isEditing, setIsEditing] = useState(false);
     const [localCode, setLocalCode] = useState(student.code_content || '');
     const [isRunning, setIsRunning] = useState(false);
@@ -213,7 +215,7 @@ function StudentTile({ student, isSelected, onSelect, onExpand, sessionCode }) {
                         language={student.language}
                         value={localCode}
                         onChange={isEditing ? handleCodeChange : undefined}
-                        theme="vs-dark"
+                        theme={isDark ? "vs-dark" : "light"}
                         options={{
                             readOnly: !isEditing,
                             minimap: { enabled: false },
