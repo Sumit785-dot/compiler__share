@@ -37,11 +37,11 @@ function App() {
                     {/* Public routes */}
                     <Route
                         path="/login"
-                        element={user ? <Navigate to={user.role === 'teacher' ? '/dashboard' : '/code'} /> : <Login />}
+                        element={user ? <Navigate to={user.role === 'teacher' ? '/dashboard' : '/student-dashboard'} /> : <Login />}
                     />
                     <Route
                         path="/register"
-                        element={user ? <Navigate to={user.role === 'teacher' ? '/dashboard' : '/code'} /> : <Register />}
+                        element={user ? <Navigate to={user.role === 'teacher' ? '/dashboard' : '/student-dashboard'} /> : <Register />}
                     />
 
                     {/* Teacher routes */}
