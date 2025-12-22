@@ -142,6 +142,10 @@ export const codingAPI = {
 
     getLanguages: () =>
         api.get('/coding/languages/'),
+
+    // Report student activity (split screen, tab switch, etc.)
+    reportActivity: (sessionCode, activityType) =>
+        api.post(`/sessions/${sessionCode}/activity/`, { type: activityType }),
 };
 
 // GitHub API
