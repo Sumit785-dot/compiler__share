@@ -159,6 +159,7 @@ export default function TeacherDashboard() {
         };
 
         const handleActivity = (data) => {
+            console.log('🔔 Activity received:', data);  // DEBUG
             setStudents(prev => prev.map(s => {
                 if (s.id === data.student_id) {
                     if (data.activity_type === 'tab_hidden') {

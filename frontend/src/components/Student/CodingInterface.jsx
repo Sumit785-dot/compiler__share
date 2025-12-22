@@ -391,6 +391,7 @@ export default function CodingInterface() {
 
             // Calculate percentage of screen width being used
             const widthPercentage = (windowWidth / screenWidth) * 100;
+            console.log(`📐 Screen check: ${windowWidth}/${screenWidth} = ${widthPercentage.toFixed(1)}%`);  // DEBUG
 
             // If window is less than 80% of screen width, likely split-screen
             const isSplitScreen = widthPercentage < 80;
@@ -398,15 +399,19 @@ export default function CodingInterface() {
             // Only report if state changed (to avoid spamming)
             if (isSplitScreen && lastReportedState !== 'split_screen') {
                 try {
+                    console.log('🚨 Split screen detected! Reporting...');  // DEBUG
                     await codingAPI.reportActivity(sessionCode, 'split_screen');
+                    console.log('✅ Split screen reported successfully');  // DEBUG
                     // OPTIMIZATION: Split screen detected and reported
                     lastReportedState = 'split_screen';
                 } catch (e) {
+                    console.error('❌ Failed to report split screen:', e);  // DEBUG
                     // Silently fail proctoring report
                 }
             } else if (!isSplitScreen && lastReportedState === 'split_screen') {
                 // User returned to full screen
                 try {
+                    console.log('✅ Fullscreen restored! Reporting...');  // DEBUG
                     await codingAPI.reportActivity(sessionCode, 'fullscreen_restored');
                     // OPTIMIZATION: Full screen restored and reported
                     lastReportedState = null;

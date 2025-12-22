@@ -266,6 +266,7 @@ class ReportActivityView(APIView):
     
     def post(self, request, session_code):
         activity_type = request.data.get('type')
+        print(f"📍 ReportActivityView: session={session_code}, type={activity_type}, user={request.user}")  # DEBUG
         
         if not activity_type:
             return Response(
@@ -287,6 +288,7 @@ class ReportActivityView(APIView):
         from asgiref.sync import async_to_sync
         
         channel_layer = get_channel_layer()
+        print(f"📤 Broadcasting to session_{session_code}")  # DEBUG
         async_to_sync(channel_layer.group_send)(
             f'session_{session_code}',
             {
@@ -296,6 +298,7 @@ class ReportActivityView(APIView):
                 'timestamp': timezone.now().isoformat()
             }
         )
+        print(f"✅ Broadcast complete")  # DEBUG
         
         return Response({'status': 'reported'})
 

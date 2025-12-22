@@ -377,8 +377,11 @@ class CodingConsumer(AsyncWebsocketConsumer):
     
     async def student_activity(self, event):
         """Send student activity update to teachers."""
+        print(f"🔔 student_activity received: {event}")  # DEBUG
         user_data = await self.get_user_data()
+        print(f"👤 User data: {user_data}")  # DEBUG
         if user_data and user_data['role'] == 'teacher':
+            print(f"✅ Sending to teacher: {event}")  # DEBUG
             await self.safe_send(event)
 
     async def student_alert(self, event):
