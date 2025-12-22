@@ -378,65 +378,60 @@ export default function CodingInterface() {
         };
     }, [sessionCode]);
 
-    // Proctoring: Detect split-screen / window resize
+    // Proctoring: Detect split-screen / window resize (Production Ready)
     useEffect(() => {
         if (!sessionCode) return;
 
-        let lastReportedState = null; // Track last reported state to avoid duplicate reports
+        let lastState = null;
+        let debounceTimer = null;
 
         const checkSplitScreen = async () => {
-            // Get screen and window dimensions
-            const screenWidth = window.screen.width;
-            const windowWidth = window.innerWidth;
+            const screenW = window.screen.availWidth;
+            const screenH = window.screen.availHeight;
 
-            // Calculate percentage of screen width being used
-            const widthPercentage = (windowWidth / screenWidth) * 100;
-            console.log(`📐 Screen check: ${windowWidth}/${screenWidth} = ${widthPercentage.toFixed(1)}%`);  // DEBUG
+            const winW = window.innerWidth;
+            const winH = window.innerHeight;
 
-            // If window is less than 80% of screen width, likely split-screen
-            const isSplitScreen = widthPercentage < 80;
+            // Calculate % usage of available screen
+            const widthRatio = winW / screenW;
+            const heightRatio = winH / screenH;
 
-            // Only report if state changed (to avoid spamming)
-            if (isSplitScreen && lastReportedState !== 'split_screen') {
+            // Real split screen condition: either width OR height is less than 75%
+            const isSplit = widthRatio < 0.75 || heightRatio < 0.75;
+
+            if (isSplit && lastState !== 'split') {
+                lastState = 'split';
                 try {
-                    console.log('🚨 Split screen detected! Reporting...');  // DEBUG
                     await codingAPI.reportActivity(sessionCode, 'split_screen');
-                    console.log('✅ Split screen reported successfully');  // DEBUG
-                    // OPTIMIZATION: Split screen detected and reported
-                    lastReportedState = 'split_screen';
                 } catch (e) {
-                    console.error('❌ Failed to report split screen:', e);  // DEBUG
                     // Silently fail proctoring report
                 }
-            } else if (!isSplitScreen && lastReportedState === 'split_screen') {
-                // User returned to full screen
+            }
+
+            if (!isSplit && lastState === 'split') {
+                lastState = 'full';
                 try {
-                    console.log('✅ Fullscreen restored! Reporting...');  // DEBUG
                     await codingAPI.reportActivity(sessionCode, 'fullscreen_restored');
-                    // OPTIMIZATION: Full screen restored and reported
-                    lastReportedState = null;
                 } catch (e) {
                     // Silently fail proctoring report
                 }
             }
         };
 
-        // Check on mount
-        checkSplitScreen();
-
-        // Check on window resize
-        const handleResize = () => {
-            checkSplitScreen();
+        // Debounced resize handler to prevent spam
+        const onResize = () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(checkSplitScreen, 400);
         };
 
-        window.addEventListener('resize', handleResize);
+        window.addEventListener('resize', onResize);
 
-        // Also check periodically (every 5 seconds) in case user manually resizes
-        const interval = setInterval(checkSplitScreen, 5000);
+        // Initial check on mount
+        checkSplitScreen();
 
         return () => {
-            window.removeEventListener('resize', handleResize);
-            clearInterval(interval);
+            window.removeEventListener('resize', onResize);
+            clearTimeout(debounceTimer);
         };
     }, [sessionCode]);
 
