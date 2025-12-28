@@ -33,6 +33,7 @@ export default function PersonalConsole() {
     const [output, setOutput] = useState([]);
     const [isRunning, setIsRunning] = useState(false);
     const [socket, setSocket] = useState(null);
+    const [filename, setFilename] = useState('main.py');
 
     // Initial WebSocket connection
     useEffect(() => {
@@ -167,6 +168,13 @@ export default function PersonalConsole() {
     const handleLanguageChange = (newLang) => {
         setLanguage(newLang);
         setCode(codeTemplates[newLang] || codeTemplates.python);
+
+        // Update filename extension
+        const extensions = { python: 'py', javascript: 'js', c: 'c', cpp: 'cpp', java: 'java' };
+        const ext = extensions[newLang] || 'txt';
+        const nameParts = filename.split('.');
+        const name = nameParts.length > 1 ? nameParts.slice(0, -1).join('.') : filename;
+        setFilename(`${name}.${ext}`);
     };
 
     // Handle code changes
@@ -192,6 +200,17 @@ export default function PersonalConsole() {
     };
 
     const clearConsole = () => setOutput([]);
+
+    // Download code
+    const downloadCode = () => {
+        const element = document.createElement("a");
+        const file = new Blob([code], { type: 'text/plain' });
+        element.href = URL.createObjectURL(file);
+        element.download = filename;
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
+        document.body.removeChild(element);
+    };
 
 
 
@@ -351,6 +370,17 @@ export default function PersonalConsole() {
                         Personal Console
                     </div>
 
+                    {/* Filename Input */}
+                    <div className="flex items-center">
+                        <input
+                            type="text"
+                            value={filename}
+                            onChange={(e) => setFilename(e.target.value)}
+                            className="bg-transparent text-gray-300 text-sm font-mono focus:outline-none border-b border-transparent focus:border-blue-500 px-2 py-1 w-40 hover:bg-white/5 rounded transition-colors"
+                            placeholder="filename.ext"
+                        />
+                    </div>
+
                     {/* Language Selector */}
                     <select
                         value={language}
@@ -366,6 +396,17 @@ export default function PersonalConsole() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {/* Download Button */}
+                    <button
+                        onClick={downloadCode}
+                        className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                        title="Download Code"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                    </button>
+
                     {/* GitHub Button */}
                     {githubConnected ? (
                         <button
