@@ -1,0 +1,451 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Dark Theme (Blue Mode) */
+body {
+  font-family: var(--font-sans);
+  /* Deep Blue Gradient */
+  background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #172554 100%);
+  min-height: 100vh;
+  color: #eff6ff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Light Theme (White Mode) */
+html.light body,
+.light body {
+  /* Clean White Gradient */
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%) !important;
+  color: #0f172a !important;
+}
+
+/* Light theme scrollbar */
+.light ::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.8);
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #60a5fa, #a78bfa);
+}
+
+/* Glassmorphism utilities */
+@layer utilities {
+  .glass {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+  }
+
+  .glass-light {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3),
+      0 0 40px rgba(14, 165, 233, 0.1);
+  }
+
+  .glow-success {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3),
+      0 0 40px rgba(34, 197, 94, 0.1);
+  }
+
+  .glow-error {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3),
+      0 0 40px rgba(239, 68, 68, 0.1);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .border-gradient {
+    border-image: linear-gradient(135deg, #3b82f6, #8b5cf6) 1;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-border {
+
+  0%,
+  100% {
+    border-color: rgba(59, 130, 246, 0.5);
+  }
+
+  50% {
+    border-color: rgba(139, 92, 246, 0.8);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-pulse-border {
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+/* Monaco Editor customization */
+.monaco-editor {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Status indicators */
+.status-online {
+  @apply w-3 h-3 rounded-full bg-green-500;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+}
+
+.status-idle {
+  @apply w-3 h-3 rounded-full bg-yellow-500;
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.6);
+}
+
+.status-offline {
+  @apply w-3 h-3 rounded-full bg-gray-500;
+}
+
+/* Button base styles */
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2;
+}
+
+.btn-primary {
+  @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 shadow-lg hover:shadow-xl hover:shadow-blue-500/25;
+}
+
+.btn-secondary {
+  @apply bg-dark-700 text-gray-200 border border-dark-500 hover:bg-dark-600 hover:border-dark-400;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-500 shadow-lg hover:shadow-red-500/25;
+}
+
+/* Input styles - using @layer for proper specificity */
+@layer components {
+  .input {
+    @apply w-full px-4 py-3 rounded-lg bg-dark-800 border border-dark-600 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200;
+  }
+}
+
+/* Card styles */
+.card {
+  @apply glass rounded-xl p-6 shadow-xl;
+}
+
+/* Console output styles */
+.console {
+  font-family: var(--font-mono);
+  @apply text-sm leading-relaxed;
+}
+
+.console-output {
+  @apply text-green-400;
+}
+
+.console-error {
+  @apply text-red-400;
+}
+
+.console-warning {
+  @apply text-yellow-400;
+}
+
+/* ========== LIGHT THEME OVERRIDES ========== */
+
+/* Light theme glass effect */
+.light .glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.light .glass-light {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+/* Light theme cards */
+.light .card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Light theme text colors */
+.light .text-white {
+  color: #1e293b;
+}
+
+.light .text-gray-400 {
+  color: #64748b;
+}
+
+.light .text-gray-500 {
+  color: #475569;
+}
+
+/* Light theme backgrounds */
+.light .bg-dark-800,
+.light .bg-dark-900 {
+  background-color: #ffffff !important;
+}
+
+.light .bg-dark-700 {
+  background-color: #f8fafc !important;
+}
+
+.light .bg-dark-600 {
+  background-color: #f1f5f9 !important;
+}
+
+/* Light theme borders */
+.light .border-dark-600,
+.light .border-dark-700 {
+  border-color: #cbd5e1;
+}
+
+.light .border-dark-500 {
+  border-color: #94a3b8;
+}
+
+/* Light theme inputs */
+.light .input {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.light .input::placeholder {
+  color: #94a3b8;
+}
+
+/* Light theme buttons */
+.light .btn-secondary {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+.light .btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+/* Light theme console */
+.light .console-output {
+  color: #16a34a;
+}
+
+.light .console-error {
+  color: #dc2626;
+}
+
+/* Monaco Editor - Light Theme */
+.light .monaco-editor {
+  border: 1px solid #e2e8f0;
+}
+
+/* Light theme - GitHub button */
+.light .bg-gray-800 {
+  background-color: #f1f5f9;
+}
+
+.light .bg-gray-800:hover {
+  background-color: #e2e8f0;
+}
+
+.light .border-gray-600 {
+  border-color: #cbd5e1;
+}
+
+/* Light theme - Main page container */
+.light .bg-dark-900 {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+}
+
+/* Light theme - Header glass effect */
+.light header.glass {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: #e2e8f0;
+}
+
+/* Light theme - Text colors */
+.light .text-gray-300 {
+  color: #475569;
+}
+
+/* Light theme - Monaco editor container */
+.light .flex-1.min-w-0 {
+  background-color: #ffffff;
+}
+
+/* Light theme - Dropdown/Select */
+.light select.input {
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.light select.input option {
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+/* Light theme - Personal Console badge */
+.light .bg-green-500\/20 {
+  background-color: rgba(34, 197, 94, 0.15);
+}
+
+/* Light theme - Status indicators */
+.light .status-online {
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+}
+
+/* Light theme - Modal background */
+.light .bg-dark-800 {
+  background-color: #ffffff;
+}
+
+.light .border-dark-600 {
+  border-color: #e2e8f0;
+}
+
+/* Light theme - Gradient text still works */
+.light .text-gradient {
+  background: linear-gradient(135deg, #0ea5e9, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Light theme - hover states */
+.light .hover\:bg-dark-700:hover {
+  background-color: #f1f5f9;
+}
+
+/* Light theme - fixed backgrounds */
+.light .fixed.inset-0.pointer-events-none .bg-green-500\/5,
+.light .fixed.inset-0.pointer-events-none .bg-blue-500\/5,
+.light .fixed.inset-0.pointer-events-none .bg-purple-500\/5 {
+  opacity: 0.3;
+}
+
+/* Light theme - GitHub button (keep dark for visibility) */
+.light .github-btn {
+  background-color: #24292e !important;
+  color: #ffffff !important;
+  border-color: #1b1f23 !important;
+}
+
+.light .github-btn:hover {
+  background-color: #2f363d !important;
+}
+
+/* Light theme - Teacher Dashboard Modal */
+.light .bg-black\/95 {
+  background-color: rgba(241, 245, 249, 0.98);
+}
+
+/* Light theme - Code editor and console containers in Teacher Dashboard */
+.light .bg-dark-900.flex.flex-col,
+.light .flex-col.bg-dark-900 {
+  background-color: #ffffff;
+}
+
+/* Light theme - All dark backgrounds should be light */
+.light [class*="bg-dark-"] {
+  background-color: #ffffff !important;
+}
+
+.light .border-dark-600,
+.light .border-dark-700,
+.light [class*="border-dark-"] {
+  border-color: #e2e8f0;
+}
+
+/* Light theme - Monaco editor wrapper in tiles */
+.light .rounded-lg.overflow-hidden.bg-dark-900 {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+/* Light theme - Console output area */
+.light .rounded-lg.bg-dark-900.border {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+/* Light theme - Modal header and body */
+.light .bg-dark-800.border.border-dark-600 {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
