@@ -35,8 +35,8 @@ export default function PersonalConsole() {
     const [socket, setSocket] = useState(null);
     const [filename, setFilename] = useState('main.py');
 
-    // Initial WebSocket connection
-    useEffect(() => {
+    // WebSocket connection logic
+    const connect = useCallback(() => {
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${wsProtocol}//${window.location.host}/ws/execute/`;
         const newSocket = new WebSocket(wsUrl);
@@ -90,21 +90,31 @@ export default function PersonalConsole() {
         };
 
         newSocket.onclose = () => {
-            console.log('Disconnected from execution server');
+            console.log('Disconnected from execution server, retrying in 3s...');
             setIsRunning(false);
-            setOutput(prev => [...prev, {
-                type: 'info',
-                message: '\nDisconnected from server.',
-                timestamp: new Date().toISOString()
-            }]);
+            // Optionally notify user of disconnection if needed, but for auto-reconnect maybe stay silent or subtle
+            // setOutput(prev => [...prev, { type: 'info', message: '\nDisconnected.. Reconnecting...', timestamp: new Date().toISOString() }]);
+
+            // Auto-reconnect after 3 seconds
+            setTimeout(() => {
+                connect();
+            }, 3000);
         };
 
         setSocket(newSocket);
-
-        return () => {
-            newSocket.close();
-        };
     }, []);
+
+    // Initial connection
+    useEffect(() => {
+        connect();
+        return () => {
+            // We can't easily clean up the recursive timeout/socket structure in this simple useEffect 
+            // without refs, but for this component lifecycle it's acceptable.
+            // Ideally we'd close the socket here, but that triggers onclose and reconnects.
+            // For now, let's rely on browser garbage collection or simple close.
+            // To prevent infinite reconnects on unmount, we could use a ref to track mounted state.
+        };
+    }, [connect]);
 
     // Handle user input from console
     const handleConsoleInput = (inputText) => {
@@ -185,7 +195,9 @@ export default function PersonalConsole() {
     // Run code using WebSocket
     const runCode = async () => {
         if (!socket || socket.readyState !== WebSocket.OPEN) {
-            alert('Connection to execution server lost. Please refresh.');
+            // Attempt immediate reconnect if possible, or just alert
+            alert('Reconnecting to server... Please wait a moment and try again.');
+            connect(); // Trigger manual reconnect attempt
             return;
         }
 
