@@ -13,3 +13,11 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = BaseUserAdmin.add_fieldsets + (
         ('Profile', {'fields': ('role', 'full_name')}),
     )
+
+from .models import TeacherSettings
+
+@admin.register(TeacherSettings)
+class TeacherSettingsAdmin(admin.ModelAdmin):
+    list_display = ['user', 'is_ai_active', 'updated_at']
+    list_filter = ['is_ai_active']
+    search_fields = ['user__username', 'user__email']

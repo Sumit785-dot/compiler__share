@@ -7,8 +7,10 @@ import { useAuth } from './AuthContext';
 
 const WebSocketContext = createContext(null);
 
-// SECURITY: Use environment variable for WebSocket URL, fallback to localhost for dev
-const WS_BASE_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
+// SECURITY: Use environment variable for WebSocket URL, fallback to window.location.host (handles ngrok & local ports)
+const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+// const WS_BASE_URL = import.meta.env.VITE_WS_URL || `${protocol}//${window.location.host}`;
+const WS_BASE_URL = 'ws://127.0.0.1:8001'; // DEBUG: Hardcoded to bypass proxy
 
 export function WebSocketProvider({ children }) {
     const { user } = useAuth();
@@ -41,10 +43,12 @@ export function WebSocketProvider({ children }) {
         }
 
         const wsUrl = `${WS_BASE_URL}/ws/session/${code}/?token=${token}`;
+        console.log('🔌 Connecting to WebSocket:', wsUrl); // DEBUG
         // OPTIMIZATION: Connecting to WebSocket session
         const ws = new WebSocket(wsUrl);
 
-        ws.onopen = () => {
+        ws.onopen = (event) => {
+            console.log('✅ WebSocket Connected'); // DEBUG
             // OPTIMIZATION: WebSocket connected
             setIsConnected(true);
             setSessionCode(code);
@@ -81,6 +85,7 @@ export function WebSocketProvider({ children }) {
         };
 
         ws.onclose = (event) => {
+            console.log('🔴 WebSocket Closed:', event.code, event.reason); // DEBUG
             // OPTIMIZATION: WebSocket closed
             setIsConnected(false);
 

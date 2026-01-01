@@ -31,6 +31,7 @@ class CodingConsumer(AsyncWebsocketConsumer):
         self.session_group_name = f'session_{self.session_code}'
         self.user = self.scope.get('user')
         self.is_connected = False
+        print(f"🔌 WebSocket Connect: code={self.session_code}, user={self.user}") # DEBUG
         
         # Check if user is authenticated
         user_data = await self.get_user_data()

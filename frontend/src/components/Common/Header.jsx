@@ -29,7 +29,7 @@ export default function Header() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                             </svg>
                         </div>
-                        <span className="text-xl font-bold text-gradient">CodeMonitor</span>
+                        <span className="text-xl font-bold text-gradient">Observer</span>
                     </Link>
 
                     {/* Center - Connection Status */}
@@ -59,6 +59,12 @@ export default function Header() {
                                         className="text-gray-300 hover:text-green-400 transition-colors bg-transparent border-none cursor-pointer"
                                     >
                                         Personal Console
+                                    </button>
+                                    <button
+                                        onClick={() => navigate('/settings')}
+                                        className="text-gray-300 hover:text-purple-400 transition-colors bg-transparent border-none cursor-pointer"
+                                    >
+                                        Settings
                                     </button>
                                     <button
                                         onClick={() => navigate('/join')}

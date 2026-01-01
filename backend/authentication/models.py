@@ -46,3 +46,17 @@ class GitHubConnection(models.Model):
     
     def __str__(self):
         return f"{self.user.username} -> {self.github_username or 'GitHub'}"
+
+
+class TeacherSettings(models.Model):
+    """Settings for teacher, specifically for AI features."""
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='settings')
+    openai_api_key = models.CharField(max_length=255, blank=True)
+    gemini_api_key = models.CharField(max_length=255, blank=True)
+    groq_api_key = models.CharField(max_length=255, blank=True)
+    is_ai_active = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Settings for {self.user.username}"

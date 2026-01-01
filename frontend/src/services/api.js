@@ -54,6 +54,11 @@ api.interceptors.response.use(
                     localStorage.removeItem('refreshToken');
                     window.location.href = '/login';
                 }
+            } else {
+                // No refresh token available, force logout
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                window.location.href = '/login';
             }
         }
 
@@ -77,7 +82,15 @@ export const authAPI = {
 
     updateProfile: (data) =>
         api.patch('/auth/profile/', data),
+
+    // Teacher Settings
+    getSettings: () =>
+        api.get('/auth/settings/'),
+
+    updateSettings: (data) =>
+        api.post('/auth/settings/', data),
 };
+
 
 // Sessions API
 export const sessionsAPI = {
@@ -146,6 +159,10 @@ export const codingAPI = {
     // Report student activity (split screen, tab switch, etc.)
     reportActivity: (sessionCode, activityType) =>
         api.post(`/sessions/${sessionCode}/activity/`, { type: activityType }),
+
+    // AI Solver
+    solveError: (prompt, code, language) =>
+        api.post('/coding/ai/solve/', { prompt, code, language }),
 };
 
 // GitHub API

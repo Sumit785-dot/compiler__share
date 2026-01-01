@@ -78,6 +78,11 @@ class JoinSessionView(APIView):
         serializer = JoinSessionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
+        # Prevent teachers from joining as students
+        if request.user.role == 'teacher':
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Teachers cannot join sessions as participants. Please use the dashboard.")
+
         session_code = serializer.validated_data['session_code']
         session = get_object_or_404(CodingSession, session_code=session_code, is_active=True)
         
@@ -206,9 +211,14 @@ class TeacherDashboardView(APIView):
     def get(self, request, session_code):
         session = get_object_or_404(
             CodingSession,
-            session_code=session_code,
-            teacher=request.user
+            session_code=session_code
         )
+        
+        if session.teacher != request.user:
+            return Response(
+                {'error': 'You do not have permission to view this dashboard.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
         
         participants = session.participants.select_related('student').order_by('student__id').all()
         
@@ -276,6 +286,11 @@ class ReportActivityView(APIView):
             
         session = get_object_or_404(CodingSession, session_code=session_code)
         
+        # If user is the teacher, just log it but don't error
+        if request.user == session.teacher:
+             print("ℹ️ Teacher reported activity, ignoring participant check")
+             return Response({'status': 'reported (teacher)'})
+
         # Verify student is participant
         participant = get_object_or_404(
             SessionParticipant,

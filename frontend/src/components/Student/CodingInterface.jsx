@@ -315,7 +315,7 @@ export default function CodingInterface() {
                 selectedRepo,
                 githubFilename,
                 code,
-                `Update ${githubFilename} from CodeMonitor`
+                `Update ${githubFilename} from Observer`
             );
 
             if (response.data.success) {
@@ -443,7 +443,7 @@ export default function CodingInterface() {
         try {
             const response = await githubAPI.createRepo(
                 newRepoName.trim(),
-                'Created from CodeMonitor',
+                'Created from Observer',
                 newRepoPrivate
             );
 

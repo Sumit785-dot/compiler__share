@@ -46,9 +46,20 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
+        username_or_email = serializer.validated_data['username']
+        password = serializer.validated_data['password']
+        
+        # Check if input is email
+        if '@' in username_or_email:
+            try:
+                user_obj = User.objects.get(email=username_or_email)
+                username_or_email = user_obj.username
+            except User.DoesNotExist:
+                pass  # Use original input, will fail in authenticate
+        
         user = authenticate(
-            username=serializer.validated_data['username'],
-            password=serializer.validated_data['password']
+            username=username_or_email,
+            password=password
         )
         
         if not user:
@@ -228,7 +239,7 @@ class GitHubPushView(APIView):
         repo_full_name = request.data.get('repo')  # e.g., "username/repo"
         filename = request.data.get('filename', 'main.py')
         code = request.data.get('code', '')
-        message = request.data.get('message', 'Update code from CodeMonitor')
+        message = request.data.get('message', 'Update code from Observer')
         branch = request.data.get('branch', 'main')
         
         if not repo_full_name or not code:
@@ -278,7 +289,7 @@ class GitHubCreateRepoView(APIView):
             )
         
         name = request.data.get('name', '')
-        description = request.data.get('description', 'Created from CodeMonitor')
+        description = request.data.get('description', 'Created from Observer')
         private = request.data.get('private', False)
         
         if not name:
@@ -298,3 +309,52 @@ class GitHubCreateRepoView(APIView):
             return Response(result)
         else:
             return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+
+from .models import TeacherSettings
+
+class TeacherSettingsView(APIView):
+    """Get or update teacher settings."""
+    
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        if request.user.role != 'teacher':
+            return Response({'error': 'Only teachers can access settings'}, status=status.HTTP_403_FORBIDDEN)
+            
+        settings, _ = TeacherSettings.objects.get_or_create(user=request.user)
+        
+        return Response({
+            'openai_api_key': settings.openai_api_key,
+            'gemini_api_key': settings.gemini_api_key,
+            'groq_api_key': settings.groq_api_key,
+            'is_ai_active': settings.is_ai_active
+        })
+        
+    def post(self, request):
+        if request.user.role != 'teacher':
+            return Response({'error': 'Only teachers can access settings'}, status=status.HTTP_403_FORBIDDEN)
+            
+        settings, _ = TeacherSettings.objects.get_or_create(user=request.user)
+        
+        # Update fields if present in request
+        if 'openai_api_key' in request.data:
+            settings.openai_api_key = request.data['openai_api_key']
+        if 'gemini_api_key' in request.data:
+            settings.gemini_api_key = request.data['gemini_api_key']
+        if 'groq_api_key' in request.data:
+            settings.groq_api_key = request.data['groq_api_key']
+        if 'is_ai_active' in request.data:
+            settings.is_ai_active = request.data['is_ai_active']
+            
+        settings.save()
+        
+        return Response({
+            'message': 'Settings updated successfully',
+            'settings': {
+                'openai_api_key': settings.openai_api_key,
+                'gemini_api_key': settings.gemini_api_key,
+                'groq_api_key': settings.groq_api_key,
+                'is_ai_active': settings.is_ai_active
+            }
+        })

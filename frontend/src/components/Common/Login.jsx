@@ -97,7 +97,7 @@ export default function Login() {
                             Welcome Back
                         </h1>
                         <p className="text-gray-400 text-sm font-medium tracking-wide uppercase opacity-80">
-                            Sign in to CodeMonitor
+                            Sign in to Observer
                         </p>
                     </div>
 
@@ -111,7 +111,7 @@ export default function Login() {
 
                         <div className="space-y-1">
                             <label htmlFor="username" className="block text-xs font-semibold text-gray-400 ml-1 uppercase tracking-wider">
-                                Username
+                                Username or Email
                             </label>
                             <div className="relative group">
                                 <input
@@ -120,7 +120,7 @@ export default function Login() {
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     className="w-full px-4 py-3.5 bg-black/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-black/70 text-white placeholder-gray-400 transition-all duration-300 outline-none group-hover:bg-black/60"
-                                    placeholder="Enter your username"
+                                    placeholder="Enter your username or email"
                                     required
                                     autoComplete="username"
                                 />
@@ -177,7 +177,7 @@ export default function Login() {
 
             {/* Minimal Footer */}
             <div className="absolute bottom-6 left-8 text-white/30 text-xs font-medium tracking-widest uppercase">
-                CodeMonitor v1.0 • Secure Environment
+                Observer v1.0 • Secure Environment
             </div>
         </div>
     );

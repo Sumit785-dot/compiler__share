@@ -8,6 +8,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { sessionsAPI, codingAPI } from '../../services/api';
 import StudentTile from './StudentTile';
 import ErrorNotifications from './ErrorNotifications';
+import AIChatWidget from './AIChatWidget';
 import Editor from '@monaco-editor/react';
 
 export default function TeacherDashboard() {
@@ -36,17 +37,22 @@ export default function TeacherDashboard() {
             try {
                 const response = await sessionsAPI.getDashboard(sessionCode);
                 setSession(response.data.session);
-                // Sort students by ID to ensure stable ordering
                 const sortedStudents = [...response.data.students].sort((a, b) => a.id - b.id);
                 setStudents(sortedStudents);
 
-                // Load errors
                 const errorsResponse = await sessionsAPI.getErrors(sessionCode);
                 setErrors(errorsResponse.data);
+                setLoading(false);
             } catch (error) {
                 console.error('Failed to load session:', error);
-                navigate('/dashboard');
-            } finally {
+
+                if (error.response?.status === 403) {
+                    setError('You do not have permission to view this session.');
+                } else if (error.response?.status === 404) {
+                    setError('Session not found.');
+                } else {
+                    setError('Failed to load session.');
+                }
                 setLoading(false);
             }
         };
@@ -215,6 +221,29 @@ export default function TeacherDashboard() {
                 <div className="animate-pulse flex flex-col items-center gap-4">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-spin" />
                     <p className="text-gray-400">Loading session...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!session) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-red-500 text-6xl mb-4">
+                        <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-white mb-2">
+                        {typeof error === 'string' ? error : 'Failed to load session'}
+                    </h2>
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="btn btn-primary mt-4"
+                    >
+                        Return to Dashboard
+                    </button>
                 </div>
             </div>
         );
@@ -570,6 +599,8 @@ export default function TeacherDashboard() {
                     </div>
                 </div>
             )}
+
+            <AIChatWidget activeSession={session} />
         </div>
     );
 }

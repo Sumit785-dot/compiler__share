@@ -290,3 +290,36 @@ class SendNotificationView(APIView):
 
 
 
+# AI Solver
+class AISolveView(APIView):
+    """Solve coding errors using configured AI."""
+    
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        if request.user.role != 'teacher':
+             return Response({'error': 'Only teachers can use AI solver'}, status=status.HTTP_403_FORBIDDEN)
+             
+        prompt = request.data.get('prompt', '')
+        context_code = request.data.get('code', '')
+        language = request.data.get('language', 'python')
+        
+        if not prompt:
+            return Response({'error': 'Prompt is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        from authentication.models import TeacherSettings
+        try:
+            settings = request.user.settings
+        except TeacherSettings.DoesNotExist:
+             settings = TeacherSettings.objects.create(user=request.user)
+             
+        from .ai_service import AIService
+        service = AIService(settings)
+        result = service.solve(prompt, context_code, language)
+        
+        if 'error' in result:
+             # Return error with 503 if all providers failed, or 400 for config error
+             status_code = status.HTTP_503_SERVICE_UNAVAILABLE if result['error'] == 'All AI providers failed.' else status.HTTP_400_BAD_REQUEST
+             return Response(result, status=status_code)
+             
+        return Response(result)

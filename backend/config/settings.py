@@ -7,7 +7,8 @@ from datetime import timedelta
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file
+load_dotenv(Path(__file__).resolve().parent.parent.parent / '.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -64,7 +65,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR.parent / 'frontend/dist'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -93,17 +94,19 @@ CHANNEL_LAYERS = {
 }
 
 # Database - SQLite for development, PostgreSQL/Supabase for production
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Database - PostgreSQL only
+# We strictly require DATABASE_URL to be set.
+if not os.environ.get('DATABASE_URL'):
+    import sys
+    if 'collectstatic' in sys.argv:
+        os.environ['DATABASE_URL'] = 'sqlite://:memory:'
+    else:
+        raise ValueError("DATABASE_URL environment variable is required. This project only supports PostgreSQL.")
 
-# If Supabase/PostgreSQL is configured
-if os.environ.get('DATABASE_URL'):
-    import dj_database_url
-    DATABASES['default'] = dj_database_url.parse(os.environ.get('DATABASE_URL'))
+import dj_database_url
+DATABASES = {
+    'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -125,7 +128,9 @@ USE_TZ = True
 # Static files
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = []
+STATICFILES_DIRS = [
+    BASE_DIR.parent / 'frontend/dist',
+]
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -161,6 +166,17 @@ else:
         'http://127.0.0.1:3000',
     ]
 CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True # Allow all origins for local network access
+
+# Allow Ngrok and Local Network for public access
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok-free.app',
+    'https://*.ngrok-free.dev',
+    'https://carlo-unverificative-unconfoundedly.ngrok-free.dev',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://192.168.43.250:5173',
+]
 
 # Code execution settings
 CODE_EXECUTION_TIMEOUT = 5  # seconds

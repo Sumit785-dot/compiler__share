@@ -20,10 +20,7 @@ class ArchiveService:
 
     @staticmethod
     def get_repo_name(session):
-        # Format: CodeMonitor-Session-{Code}-{Topic}
-        # Sanitized to be safe for GitHub repo names
-        topic = "".join(c for c in session.topic if c.isalnum() or c in ('-', '_')).strip()
-        return f"CodeMonitor-Session-{session.session_code}-{topic}"
+        return f"Observer-Session-{session.session_code}-{topic}"
 
     @staticmethod
     def get_file_path(student, language):
@@ -55,7 +52,7 @@ class ArchiveService:
         data = {
             "name": repo_name,
             "private": True,
-            "description": "Automated Code Archive from CodeMonitor Session",
+            "description": "Automated Code Archive from Observer Session",
             "auto_init": True
         }
         create_res = requests.post(create_url, json=data, headers=headers)
@@ -100,7 +97,7 @@ class ArchiveService:
             
             # Repo Name Logic
             s_topic = "".join(c for c in topic if c.isalnum() or c in ('-', '_')).strip()
-            repo_name = f"CodeMonitor-Session-{session_code}-{s_topic}"
+            repo_name = f"Observer-Session-{session_code}-{s_topic}"
             
             # File Path Logic
             ext_map = {'python': 'py', 'javascript': 'js', 'c': 'c', 'cpp': 'cpp', 'java': 'java'}

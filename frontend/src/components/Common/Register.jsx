@@ -9,7 +9,6 @@ export default function Register() {
     const [formData, setFormData] = useState({
         username: '',
         email: '',
-        full_name: '',
         password: '',
         password_confirm: '',
         role: 'student',
@@ -69,7 +68,7 @@ export default function Register() {
                         </svg>
                     </div>
                     <h1 className="text-3xl font-bold text-gradient">Create Account</h1>
-                    <p className="text-gray-400 mt-2">Join CodeMonitor today</p>
+                    <p className="text-gray-400 mt-2">Join Observer today</p>
                 </div>
 
                 {/* Form Card */}
@@ -91,8 +90,8 @@ export default function Register() {
                                     type="button"
                                     onClick={() => setFormData({ ...formData, role: 'teacher' })}
                                     className={`p-4 rounded-xl border-2 transition-all ${formData.role === 'teacher'
-                                            ? 'border-blue-500 bg-blue-500/10 text-white'
-                                            : 'border-dark-600 hover:border-dark-500 text-gray-400'
+                                        ? 'border-blue-500 bg-blue-500/10 text-white'
+                                        : 'border-dark-600 hover:border-dark-500 text-gray-400'
                                         }`}
                                 >
                                     <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,8 +103,8 @@ export default function Register() {
                                     type="button"
                                     onClick={() => setFormData({ ...formData, role: 'student' })}
                                     className={`p-4 rounded-xl border-2 transition-all ${formData.role === 'student'
-                                            ? 'border-purple-500 bg-purple-500/10 text-white'
-                                            : 'border-dark-600 hover:border-dark-500 text-gray-400'
+                                        ? 'border-purple-500 bg-purple-500/10 text-white'
+                                        : 'border-dark-600 hover:border-dark-500 text-gray-400'
                                         }`}
                                 >
                                     <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +115,7 @@ export default function Register() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <div>
                                 <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
                                     Username
@@ -130,20 +129,6 @@ export default function Register() {
                                     className="input"
                                     placeholder="johndoe"
                                     required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="full_name" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Full Name
-                                </label>
-                                <input
-                                    id="full_name"
-                                    name="full_name"
-                                    type="text"
-                                    value={formData.full_name}
-                                    onChange={handleChange}
-                                    className="input"
-                                    placeholder="John Doe"
                                 />
                             </div>
                         </div>

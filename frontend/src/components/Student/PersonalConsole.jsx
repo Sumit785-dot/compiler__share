@@ -271,7 +271,7 @@ export default function PersonalConsole() {
                 selectedRepo,
                 githubFilename,
                 code,
-                `Update ${githubFilename} from CodeMonitor`
+                `Update ${githubFilename} from Observer`
             );
 
             if (response.data.success) {
@@ -298,7 +298,7 @@ export default function PersonalConsole() {
         try {
             const response = await githubAPI.createRepo(
                 newRepoName.trim(),
-                'Created from CodeMonitor',
+                'Created from Observer',
                 newRepoPrivate
             );
 

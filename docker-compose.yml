@@ -40,6 +40,27 @@ services:
     networks:
       - consoleshare-network
 
+  db:
+    image: postgres:15-alpine
+    container_name: consoleshare-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=consoleshare_user
+      - POSTGRES_PASSWORD=consoleshare_password
+      - POSTGRES_DB=consoleshare
+      - POSTGRES_HOST_AUTH_METHOD=trust # Allow local connection if password fails
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432" # Bind to localhost only for security with trust auth
+    networks:
+      - consoleshare-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U consoleshare_user -d consoleshare"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 networks:
   consoleshare-network:
     driver: bridge
@@ -47,3 +68,4 @@ networks:
 volumes:
   backend_data:
   backend_static:
+  postgres_data:

@@ -9,6 +9,7 @@ import SessionManager from './components/Teacher/SessionManager'
 import JoinSession from './components/Student/JoinSession'
 import Header from './components/Common/Header'
 import StudentDashboard from './components/Student/Dashboard'
+import TeacherSettings from './components/Teacher/TeacherSettings'
 
 function App() {
     const { user, loading } = useAuth()
@@ -20,7 +21,7 @@ function App() {
                     <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-spin"
                         style={{ animationDuration: '1.5s' }}>
                     </div>
-                    <p className="text-gray-400 text-lg">Loading CodeMonitor...</p>
+                    <p className="text-gray-400 text-lg">Loading Observer...</p>
                     <p className="text-gray-500 text-sm text-center max-w-xs">
                         First load may take 30-60 seconds while server wakes up
                     </p>
@@ -52,6 +53,10 @@ function App() {
                     <Route
                         path="/session/:sessionCode"
                         element={user?.role === 'teacher' ? <TeacherDashboard /> : <Navigate to="/login" />}
+                    />
+                    <Route
+                        path="/settings"
+                        element={user?.role === 'teacher' ? <TeacherSettings /> : <Navigate to="/dashboard" />}
                     />
 
                     {/* Student routes */}
